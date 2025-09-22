@@ -1,0 +1,602 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Project Initialization and Basic Structure Setup",
+        "description": "Set up a new React.js (or Next.js) project for the K-POP Demon Hunters Shorts Hub. Initialize a Git repository and create the basic folder structure for components, styles, and API services.",
+        "details": "Technology: React.js (Next.js consideration). Repository: Git. Structure: /components, /styles, /services, /pages.",
+        "testStrategy": "Verify that the initial project can be built and run locally without errors. Confirm the Git repository is initialized and the basic folder structure is in place.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "개발 환경 및 도구 확인",
+            "description": "프로젝트를 시작하기 전에 Node.js, 패키지 매니저, Git, Task Master CLI 등이 올바르게 설치되어 있는지 점검합니다.",
+            "details": "• v22.17.1, 10.9.2 혹은  를 실행해 버전을 확인합니다.\\n• Git 사용자 정보와 기본 브랜치를 확인하고 필요한 경우 설정합니다.\\n• Task Master CLI 실행이 정상인지 간단한 명령으로 테스트합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 2,
+            "title": "Next.js 프로젝트 초기화",
+            "description": "웹 앱 기반을 위해 Next.js(또는 React) 프로젝트를 새로 생성합니다.",
+            "details": "npx create-next-app@latest 또는 대응되는 템플릿을 사용해 프로젝트를 생성하고 TypeScript, ESLint, Tailwind 여부 등을 선택합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 3,
+            "title": "기본 폴더 구조 정리",
+            "description": "컴포넌트, 스타일, 서비스, 페이지 등 핵심 디렉터리를 생성하고 규칙을 문서화합니다.",
+            "details": "src/components, src/styles, src/services, src/app 혹은 pages 등의 구조를 만들고, 공통 UI/유틸 폴더를 정의합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 4,
+            "title": "프로젝트 설정 파일 구성",
+            "description": "ESLint, Prettier, TypeScript 설정 등 기본 개발 환경 설정을 완료합니다.",
+            "details": "eslint 설정 확장, prettier 설정, tsconfig 조정, 환경 변수 템플릿(.env.example) 준비 등을 수행합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 1
+          },
+          {
+            "id": 5,
+            "title": "Git 초기화 및 원격 연결",
+            "description": "Git 저장소를 초기화하고 기본 브랜치, 원격 저장소, 초기 커밋을 준비합니다.",
+            "details": "git init 실행, .gitignore 확인, 기본 브랜치를 main으로 설정, 원격 레포지토리 추가 후 초기 커밋을 생성합니다.",
+            "status": "in-progress",
+            "dependencies": [],
+            "parentTaskId": 1
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Implement Base UI Layout and Theming",
+        "description": "Create the main responsive layout for the web page, including the container for the 7x20 grid. Apply the core color palette from the design guide to establish the dark fantasy atmosphere.",
+        "details": "Apply primary colors: Deep Black & Charcoal Gray for the base. Use Neon Purple & Electric Blue for accents. The layout should be prepared to hold the video grid and side banners.",
+        "testStrategy": "Visually inspect the page layout and color scheme against the Figma design and PRD's design guide. Ensure the base layout is responsive.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "디자인 가이드 분석",
+            "description": "PRD와 피그마 자료를 검토해 레이아웃 구조, 컬러 팔레트, 타이포그래피 요구사항을 정리합니다.",
+            "details": "필요한 섹션(헤더, 그리드 영역, 사이드 영역 등)을 문서화하고 핵심 색상/폰트를 요약합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 2,
+            "title": "글로벌 스타일 정의",
+            "description": "기본 배경, 폰트, 색상 토큰, CSS 변수 등을 정의하여 테마 기초를 마련합니다.",
+            "details": "globals.css 또는 theme.ts 등을 구성해 다크 판타지 색상과 폰트 스케일을 설정하고 재사용 가능한 변수로 정리합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 3,
+            "title": "레이아웃 컨테이너 구현",
+            "description": "7x20 그리드와 사이드 영역을 수용하는 메인 레이아웃 컴포넌트를 작성합니다.",
+            "details": "CSS Grid 또는 Flex를 사용해 메인 콘텐츠 영역과 고정 배너 자리, 헤더/푸터 등을 배치합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 4,
+            "title": "반응형 기초 설정",
+            "description": "기본 레이아웃이 태블릿과 데스크톱에서 깨지지 않도록 브레이크포인트를 설정합니다.",
+            "details": "768px, 1024px 등의 뷰포인트에서 레이아웃 변화를 확인하고 필요한 CSS를 추가합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 2
+          },
+          {
+            "id": 5,
+            "title": "레이아웃 QA 및 문서화",
+            "description": "구현한 레이아웃을 점검하고 주요 결정 사항을 문서로 남깁니다.",
+            "details": "디자인 시안과 비교해 시각적 일관성을 확인하고, README나 노션 등 협업 문서에 적용 결과와 TODO를 정리합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 2
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "YouTube Data API v3 Integration",
+        "description": "Implement the logic to fetch video data from the YouTube Data API v3. The function should use the specified search keywords and sort the results by view count.",
+        "details": "Keywords: \"K-POP Demon Hunters\", \"케이팝 데몬헌터스\", \"Kpop Demon Hunters\", etc. Sort by: viewCount. The API call should be triggered on page load/refresh. Store API key securely.",
+        "testStrategy": "Check the browser's network tab to confirm the API call is being made correctly. Log the API response to verify that the correct video data is being fetched and sorted.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "YouTube API 키 관리 설정",
+            "description": "YouTube Data API 키를 .env에 보관하고 안전하게 로딩하는 유틸을 구성합니다.",
+            "details": "환경 변수 템플릿에 YOUTUBE_API_KEY 항목을 추가하고, 서버/클라이언트에서 접근 방식(예: API Route 프록시)을 결정합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 2,
+            "title": "API 요청 유틸 구현",
+            "description": "YouTube Data API v3 search/list 엔드포인트를 호출하는 서비스 함수를 작성합니다.",
+            "details": "axios 또는 fetch를 사용해 키워드, 정렬(viewCount) 파라미터를 포함한 요청 함수를 만들고, 제한 속도 대응을 위한 기본 재시도 로직을 고려합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 3,
+            "title": "응답 데이터 정규화",
+            "description": "API 응답을 그리드 컴포넌트가 사용하기 쉽게 공통 스키마로 정리합니다.",
+            "details": "필요한 필드(썸네일, 제목, 채널, 조회수, 영상 URL 등)를 뽑아내고 타입 정의를 생성합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 4,
+            "title": "에러 및 쿼터 대응 로직 추가",
+            "description": "요청 실패 상황을 대비해 예외 처리와 쿼터 초과 대응 전략을 마련합니다.",
+            "details": "HTTP 에러 코드별 메시지를 정의하고, 일정 시간 후 재시도 또는 캐시 데이터를 반환하는 방식을 고려합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          },
+          {
+            "id": 5,
+            "title": "통합 테스트 및 로깅 확인",
+            "description": "브라우저/서버 로그를 점검해 API 호출과 응답 데이터가 정상인지 검증합니다.",
+            "details": "실제 키워드로 호출해 응답을 확인하고, 필요한 로깅과 경고 메시지를 정리합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 3
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Develop the 7x20 Video Grid Component",
+        "description": "Create a React component to display the fetched video data in a 7x20 grid. Each grid cell should render a video thumbnail.",
+        "details": "Grid dimensions: 7 columns by 20 rows (140 items total). Cell size: 135x240px (9:16 aspect ratio). The component should map over the fetched API data to render the thumbnails.",
+        "testStrategy": "Verify that the grid renders with 140 items if the API provides enough data. Check that each cell has the correct dimensions and displays a thumbnail image.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "그리드 컴포넌트 설계",
+            "description": "7x20 레이아웃을 구현하기 위한 컴포넌트 구조와 프로퍼티 타입을 정의합니다.",
+            "details": "VideoGrid, VideoCard 등 필요한 컴포넌트 분리를 결정하고, 전달받을 데이터 모델과 상태를 설계합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 2,
+            "title": "썸네일 셀 스타일링",
+            "description": "각 셀의 135x240px 비율과 다크 테마 테두리를 적용합니다.",
+            "details": "CSS 모듈 또는 styled-component를 사용해 비율 박스, 그림자 효과, 호버 준비 클래스를 정의합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 3,
+            "title": "데이터 바인딩 로직 구현",
+            "description": "YouTube/Instagram 데이터 배열을 순회해 그리드 셀에 출력하는 로직을 작성합니다.",
+            "details": "props 또는 전역 상태에서 데이터를 받아 map으로 렌더링하고 필요한 키, 접근성 속성을 설정합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 4,
+            "title": "빈 상태 및 로딩 처리",
+            "description": "데이터가 부족하거나 로딩 중일 때 사용자 경험을 위한 플레이스홀더/메시지를 제공합니다.",
+            "details": "Skeleton UI, 로딩 스피너, 데이터 수 부족 시 안내 문구를 구현해 그리드가 깨지지 않도록 합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          },
+          {
+            "id": 5,
+            "title": "시각 품질 검증",
+            "description": "피그마 디자인과 비교하여 그리드의 크기, 간격, 타이포가 정확한지 최종 확인합니다.",
+            "details": "브라우저에서 7x20 레이아웃이 정확히 렌더링되는지 검사하고 필요한 스크린샷을 남깁니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 4
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Implement Grid Item Hover Animation",
+        "description": "Apply a CSS keyframes-based wave ripple animation to the video grid items on hover. The animation should be visually consistent with the movie's color palette.",
+        "details": "Use CSS keyframes to create a 'wave ripple' effect. The animation colors should utilize the Neon Purple, Electric Blue, or Bloody Red from the design guide.",
+        "testStrategy": "Hover over multiple grid items to ensure the animation triggers smoothly and consistently. Test in major browsers (Chrome, Firefox, Safari) for compatibility.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "애니메이션 요구사항 정리",
+            "description": "파도 형태의 호버 효과를 구현하기 위한 색상, 지속시간, easing 등을 결정합니다.",
+            "details": "디자인 가이드와 참고 모션을 분석해 keyframes 명세를 문서화합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 2,
+            "title": "CSS Keyframes 정의",
+            "description": "wave ripple 효과를 위한 keyframes를 작성하고 색상 변화를 지정합니다.",
+            "details": "Neon Purple, Electric Blue 등 팔레트 색상으로 단계별 opacity/scale 변화를 정의합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 3,
+            "title": "그리드 아이템에 애니메이션 적용",
+            "description": "VideoCard 컴포넌트에 hover/focus 시 애니메이션을 적용하고 상태 클래스를 관리합니다.",
+            "details": "CSS module 또는 styled component에서 &:hover, &:focus-visible 상태를 정의하고 접근성 속성을 보완합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 4,
+            "title": "성능 및 호환성 점검",
+            "description": "애니메이션 성능이 부드러운지, 주요 브라우저에서 일관되게 작동하는지 확인합니다.",
+            "details": "Chrome, Firefox, Safari에서 테스트하고 GPU 가속 여부나 overflow 문제를 점검합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          },
+          {
+            "id": 5,
+            "title": "디자인 팀 피드백 반영",
+            "description": "모션 효과에 대한 디자인/브랜드 팀의 피드백을 수렴하고 수정 사항을 반영합니다.",
+            "details": "시연 GIF를 공유하고 색상, 속도, 지속시간에 대한 의견을 받아 조정합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 5
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Create the Ad Modal Component",
+        "description": "Develop the ad modal component that pops up when a video thumbnail is clicked. The modal should have rounded corners, a fade-in animation, and a semi-transparent overlay.",
+        "details": "Component should include a close (X) button. Style with `border-radius`, a `fade-in` CSS animation, and a backdrop overlay (e.g., `rgba(0, 0, 0, 0.7)`).",
+        "testStrategy": "Render the component in a storybook or on a test page to verify its appearance and fade-in animation. Check that the close button is visible and styled correctly.",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "모달 요구사항 정리",
+            "description": "광고 모달의 구조, 콘텐츠, 상호작용 요구사항을 정리합니다.",
+            "details": "헤더, 본문, CTA 버튼 등의 구성 요소와 애니메이션, 접근성 요구사항(포커스 트랩 등)을 정의합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 6
+          },
+          {
+            "id": 2,
+            "title": "모달 UI 컴포넌트 마크업",
+            "description": "모달 틀과 오버레이, 닫기 버튼을 포함한 JSX 구조를 작성합니다.",
+            "details": "Next.js/React 컴포넌트로 오버레이 div, 콘텐츠 영역, close 버튼, slot 영역 등을 구현합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 6
+          },
+          {
+            "id": 3,
+            "title": "스타일 및 애니메이션 적용",
+            "description": "둥근 모서리, fade-in 애니메이션, 반투명 오버레이 스타일을 구현합니다.",
+            "details": "CSS keyframes 또는 transition으로 등장 효과를 만들고, theme 색상과 box-shadow를 적용합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 6
+          },
+          {
+            "id": 4,
+            "title": "접근성 기능 추가",
+            "description": "포커스 트랩, 키보드 조작, aria 속성을 적용해 접근성을 보장합니다.",
+            "details": "react-aria 모듈 또는 직접 구현으로 ESC 종료, TAB 순환, aria-modal 등을 설정합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 6
+          },
+          {
+            "id": 5,
+            "title": "컴포넌트 테스트 및 문서화",
+            "description": "스토리북 혹은 샌드박스 페이지에서 모달 UI를 테스트하고 사용법을 문서화합니다.",
+            "details": "여러 콘텐츠 조합으로 렌더링을 확인하고 README/디자인 문서에 모달 속성과 사용 패턴을 기록합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 6
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Implement Ad Modal Interaction Logic",
+        "description": "Wire up the interaction logic for the ad modal. Clicking a thumbnail should trigger the modal. Clicking the modal's close button should dismiss it and redirect the user to the video's source page.",
+        "details": "Event handling: `onClick` on thumbnail shows modal. `onClick` on close button hides modal and triggers navigation to the external video URL.",
+        "testStrategy": "Perform an end-to-end test: 1. Click a thumbnail. 2. Verify modal appears. 3. Click the 'X' button. 4. Verify modal closes and a new tab opens to the correct YouTube/Instagram URL.",
+        "priority": "medium",
+        "dependencies": [
+          4,
+          6
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "이벤트 흐름 설계",
+            "description": "썸네일 클릭부터 모달 종료 및 리디렉션까지의 사용자 흐름을 정의합니다.",
+            "details": "상태 관리 전략(전역 vs 지역), 라우팅 방식, 새 탭 열기 여부 등을 결정합니다.",
+            "status": "done",
+            "dependencies": [],
+            "parentTaskId": 7
+          },
+          {
+            "id": 2,
+            "title": "상태 관리 및 훅 구현",
+            "description": "모달 open/close 상태를 관리하는 훅 또는 컨텍스트를 작성합니다.",
+            "details": "React useState/useReducer 또는 zustand 등 상태 라이브러리를 사용하여 모달 토글 로직을 구현합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 7
+          },
+          {
+            "id": 3,
+            "title": "썸네일 클릭 핸들러 연결",
+            "description": "그리드 아이템에 onClick 이벤트를 연결해 모달 정보를 전달합니다.",
+            "details": "선택한 영상 데이터를 모달 상태에 저장하고, keydown Enter/Space 대응을 추가합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 7
+          },
+          {
+            "id": 4,
+            "title": "모달 종료 및 리디렉션 로직",
+            "description": "닫기 버튼 클릭 시 모달 종료 후 새 탭으로 외부 링크를 열도록 구현합니다.",
+            "details": "window.open 혹은 Next.js router를 사용하고 팝업 차단 대응, 링크 추적 파라미터 여부를 검토합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 7
+          },
+          {
+            "id": 5,
+            "title": "E2E 상호작용 테스트",
+            "description": "썸네일 클릭 → 모달 표시 → 닫기 및 리디렉션 흐름을 테스트합니다.",
+            "details": "Playwright/Cypress 또는 Vitest + Testing Library로 사용자 플로우 테스트를 작성합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 7
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Implement Fixed Side Banner Ads",
+        "description": "Add two fixed banner ads (120x600px) on the left and right sides of the page. They should remain in place during scrolling and have a subtle shadow.",
+        "details": "CSS: `position: fixed`, `width: 120px`, `height: 600px`. Apply `box-shadow` and `border-radius` as per the design guide. Place placeholder ad images initially.",
+        "testStrategy": "Scroll the page up and down to confirm the banners remain fixed in the viewport. Inspect the CSS to ensure dimensions, shadow, and radius are correctly applied.",
+        "priority": "low",
+        "dependencies": [
+          2
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "배너 요구사항 확인",
+            "description": "PRD에서 배너 위치, 크기, 콘텐츠 요구사항을 정리합니다.",
+            "details": "광고 이미지 규격(120x600)과 링크 행동, 모바일에서 숨김 정책을 문서화합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 8
+          },
+          {
+            "id": 2,
+            "title": "고정 배치 스타일 구현",
+            "description": "좌우 측면에 고정되는 배너 컨테이너를 CSS로 구현합니다.",
+            "details": "position: fixed와 top/bottom 오프셋, z-index, box-shadow 등을 설정합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 8
+          },
+          {
+            "id": 3,
+            "title": "배너 콘텐츠 삽입",
+            "description": "임시 광고 이미지 또는 컴포넌트를 배너에 삽입하고 링크 동작을 연결합니다.",
+            "details": "placeholder 이미지를 사용하거나 CMS 연동을 준비하고, 클릭 시 새 탭으로 열리는지 확인합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 8
+          },
+          {
+            "id": 4,
+            "title": "스크롤 동작 검증",
+            "description": "페이지 스크롤 시 배너가 원하는 위치에 고정되는지 확인합니다.",
+            "details": "다양한 콘텐츠 길이에서 테스트하고, 상단/하단 여백과 겹침 문제를 점검합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 8
+          },
+          {
+            "id": 5,
+            "title": "접근성 및 반응형 체크",
+            "description": "배너가 스크린 리더에서 적절히 숨겨지고 모바일에서 숨김 처리되는지 확인합니다.",
+            "details": "aria-hidden 설정, tabIndex 제어, 미디어 쿼리에서 display를 none으로 변경하는지 검증합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 8
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Implement Responsive Design for Mobile",
+        "description": "Make the web page responsive, focusing on mobile devices (768px and below). The side banner ads should be hidden, and the grid layout should adapt for smaller screens.",
+        "details": "Use CSS media queries. At `@media (max-width: 768px)`, set `display: none` for the side banners. Adjust the grid to a 2 or 3-column layout for better mobile usability.",
+        "testStrategy": "Use browser developer tools to test the layout at various screen widths, especially below the 768px breakpoint. Verify that banners are hidden and the grid is legible on a simulated mobile device.",
+        "priority": "medium",
+        "dependencies": [
+          4,
+          8
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "모바일 요구사항 정리",
+            "description": "모바일(768px 이하)에서 숨겨야 하는 요소와 레이아웃 목표를 문서화합니다.",
+            "details": "사이드 배너 숨김, 그리드 열 수 축소, 헤더/CTA 재배치 등의 요구사항을 정리합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 9
+          },
+          {
+            "id": 2,
+            "title": "그리드 반응형 레이아웃 구현",
+            "description": "모바일 브레이크포인트에서 2~3열 레이아웃을 적용하고 갭을 조정합니다.",
+            "details": "CSS Grid의 auto-fit/auto-fill 또는 Tailwind/utility 클래스로 열 개수를 조정합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 9
+          },
+          {
+            "id": 3,
+            "title": "사이드 배너 숨김 처리",
+            "description": "모바일에서 사이드 배너가 완전히 숨겨지고 레이아웃이 재정렬되도록 구현합니다.",
+            "details": "@media (max-width: 768px)에서 display:none 또는 visibility 처리 후 레이아웃 마진을 재조정합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 9
+          },
+          {
+            "id": 4,
+            "title": "모바일 UI 디테일 조정",
+            "description": "폰트 크기, 버튼 간격, 여백 등 모바일에 맞게 세부 스타일을 조정합니다.",
+            "details": "Typography 스케일, CTA 영역 간격을 모바일 기준으로 재정렬하고 터치 타깃 크기를 확보합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 9
+          },
+          {
+            "id": 5,
+            "title": "다중 디바이스 테스트",
+            "description": "브라우저 DevTools 및 실제 기기에서 모바일 반응형을 검증합니다.",
+            "details": "iOS/Android, 태블릿 등에서 확인하고 스크린샷을 수집하여 QA 기록을 남깁니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 9
+          }
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Instagram Reels Content Integration",
+        "description": "Investigate and implement a method to crawl and display public Instagram Reels related to K-POP Demon Hunters. Integrate this data source into the existing video grid.",
+        "details": "This task involves creating a server-side function or using a third-party service to scrape public Instagram Reels. The fetched data (thumbnail, video URL) should be merged with the YouTube data before rendering the grid.",
+        "testStrategy": "Verify that content from both YouTube and Instagram appears mixed within the grid. Check that clicking an Instagram item correctly redirects to the Instagram Reels page.",
+        "priority": "medium",
+        "dependencies": [
+          4
+        ],
+        "status": "To Do",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Instagram 데이터 수집 전략 조사",
+            "description": "Instagram Reels 공개 데이터를 확보할 수 있는 API/스크래핑 방법을 조사합니다.",
+            "details": "공식 API, 제3자 API, 스크래핑 규정 준수 여부 등을 비교하고 위험 요소를 문서화합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 2,
+            "title": "데이터 수집 구현",
+            "description": "선택한 방법으로 Instagram Reels 데이터를 수집하는 서버 함수/스크립트를 작성합니다.",
+            "details": "Next.js API Route 또는 별도 서버에서 puppeteer, unofficial API 등을 사용해 썸네일/URL을 수집합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 3,
+            "title": "YouTube 데이터와 병합 로직 작성",
+            "description": "Instagram과 YouTube 데이터를 하나의 목록으로 합치고 중복/정렬 규칙을 정의합니다.",
+            "details": "공통 데이터 타입을 사용해 timestamp 또는 조회수 기준으로 정렬하고 출처 정보를 함께 유지합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 4,
+            "title": "Instagram 항목 렌더링",
+            "description": "그리드 컴포넌트에서 Instagram 항목을 YouTube와 동일한 방식으로 표시하도록 렌더링 로직을 확장합니다.",
+            "details": "출처별 배지나 아이콘을 추가하고 클릭 시 Instagram Reels 링크로 이동하는지 확인합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          },
+          {
+            "id": 5,
+            "title": "법적·보안 검토 및 모니터링",
+            "description": "Instagram 데이터 사용에 대한 법적 이슈를 검토하고 모니터링 전략을 마련합니다.",
+            "details": "robots.txt, 이용약관 준수 여부를 확인하고 API 실패/차단 시 대응 방안을 수립합니다.",
+            "status": "pending",
+            "dependencies": [],
+            "parentTaskId": 10
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-09-22T14:44:40.386Z",
+      "updated": "2025-09-22T21:30:22.939Z",
+      "description": "Tasks for master context"
+    }
+  }
+}

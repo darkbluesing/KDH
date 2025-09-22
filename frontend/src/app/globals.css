@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+:root {
+  --color-deep-black: #05060A;
+  --color-charcoal: #12131A;
+  --color-neon-purple: #A259FF;
+  --color-electric-blue: #3A86FF;
+  --color-bloody-red: #EF233C;
+  --color-metallic-silver: #ADB5BD;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-body-gradient text-slate-100 font-sans antialiased;
+  margin: 0;
+  min-height: 100vh;
+  background-attachment: fixed;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: theme("backgroundImage.grid-overlay");
+  opacity: 0.9;
+  z-index: -1;
+}
+
+a {
+  @apply text-kdh-electric-blue transition-colors duration-200;
+}
+
+a:hover {
+  @apply text-kdh-neon-purple;
+}
+
+::-webkit-scrollbar {
+  width: 0.75rem;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(18, 19, 26, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(162, 89, 255, 0.9), rgba(58, 134, 255, 0.9));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(239, 35, 60, 0.9), rgba(58, 134, 255, 0.9));
+}
+
+@media (max-width: 768px) {
+  body::before {
+    opacity: 0.65;
+  }
+}
