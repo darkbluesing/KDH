@@ -9,7 +9,7 @@
         "testStrategy": "Verify that the initial project can be built and run locally without errors. Confirm the Git repository is initialized and the basic folder structure is in place.",
         "priority": "high",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -52,7 +52,7 @@
             "title": "Git 초기화 및 원격 연결",
             "description": "Git 저장소를 초기화하고 기본 브랜치, 원격 저장소, 초기 커밋을 준비합니다.",
             "details": "git init 실행, .gitignore 확인, 기본 브랜치를 main으로 설정, 원격 레포지토리 추가 후 초기 커밋을 생성합니다.",
-            "status": "in-progress",
+            "status": "done",
             "dependencies": [],
             "parentTaskId": 1
           }
@@ -595,7 +595,7 @@
     ],
     "metadata": {
       "created": "2025-09-22T14:44:40.386Z",
-      "updated": "2025-09-22T21:30:22.939Z",
+      "updated": "2025-09-22T21:39:09.397Z",
       "description": "Tasks for master context"
     }
   }
