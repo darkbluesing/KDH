@@ -2,7 +2,7 @@ import type { VideoItem, VideoSource } from "@/lib/types";
 import { MOCK_VIDEOS } from "@/lib/mockVideos";
 
 const YOUTUBE_VIDEOS_ENDPOINT = "/api/youtube/videos";
-const TIKTOK_API_ENDPOINT = "/api/tiktok";
+const TIKTOK_API_ENDPOINT = "/api/videos";
 const TIKTOK_CACHE_JSON = "/tiktok.json";
 
 const YOUTUBE_FALLBACK = MOCK_VIDEOS.filter((video) => video.source === "youtube");
