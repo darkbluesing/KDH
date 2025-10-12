@@ -210,25 +210,54 @@ def get_tiktok_videos(
     headless = os.getenv("TIKTOK_HEADLESS", "1") != "0"
 
     try:
-        videos, next_cursor = _run_async(keywords, num_videos, headless=headless, initial_cursor=cursor)
-        if not videos:
-            error_msg = "TikTok search returned no video results."
-            logger.warning("%s (keyword='%s')", error_msg, ", ".join(keywords))
-            return CrawlerResult(videos=[], from_cache=False, error=error_msg, next_cursor=next_cursor)
+        videos = []
+        processed_ids = set()
+        total_fetched = 0
 
-        _CACHE[normalized_key] = {"videos": videos, "timestamp": now, "next_cursor": next_cursor}
-        logger.info("Fetched %d TikTok videos for '%s'", len(videos), ", ".join(keywords))
-        return CrawlerResult(videos=videos, from_cache=False, next_cursor=next_cursor)
-    except Exception as exc:  # noqa: BLE001
-        logger.exception("Error fetching TikTok videos for '%s'", ", ".join(keywords))
-        if cached_entry:
-            return CrawlerResult(
-                videos=cached_entry["videos"],
-                from_cache=True,
-                error=str(exc),
-                next_cursor=cached_entry["next_cursor"],
-            )
-        return CrawlerResult(videos=[], from_cache=False, error=str(exc), next_cursor=None)
+        for keyword in keywords:
+            print(f"Fetching videos for keyword: {keyword}")
+            # Using api.by_hashtag for single keyword search
+            videos_from_api = api.by_hashtag(keyword, count=num_videos)
+            
+            # Log the number of videos returned by the API for this keyword
+            print(f"TikTokApi returned {len(videos_from_api)} videos for keyword '{keyword}'.")
+
+            for video in videos_from_api:
+                if video.id in processed_ids:
+                    continue
+
+                # Log the thumbnail URL from the raw API response
+                thumbnail_url = video.video.cover if hasattr(video, 'video') and hasattr(video.video, 'cover') else 'No cover found'
+                print(f"Video ID {video.id} has thumbnail URL: {thumbnail_url}")
+
+                videos.append(
+                    Video(
+                        video_id=video.id,
+                        title=video.desc,
+                        author_id=video.author.unique_id,
+                        author_name=video.author.nickname,
+                        play_url=video.video.play_addr,
+                        download_url=video.video.download_addr,
+                        thumbnail_url=video.video.cover,
+                        stats=VideoStats(
+                            likes=video.stats["diggCount"],
+                            shares=video.stats["shareCount"],
+                            comments=video.stats["commentCount"],
+                            views=video.stats["playCount"],
+                        ),
+                    )
+                )
+                processed_ids.add(video.id)
+                if len(videos) >= num_videos:
+                    break
+            if len(videos) >= num_videos:
+                break
+
+        result = CrawlerResult(videos=videos, from_cache=False)
+
+    except Exception as e:
+        print(f"An error occurred during TikTok crawling: {e}", file=sys.stderr)
+        result = CrawlerResult(videos=[], from_cache=False, error=str(e))
 
 
 def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
