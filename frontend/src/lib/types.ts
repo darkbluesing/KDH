@@ -1,4 +1,4 @@
-export type VideoSource = "youtube" | "instagram";
+export type VideoSource = "youtube" | "tiktok";
 
 export interface VideoItem {
   id: string;
@@ -8,10 +8,23 @@ export interface VideoItem {
   channelName?: string;
   viewCount?: number;
   thumbnailUrl?: string;
+  permalink?: string;
+  mediaUrl?: string;
+  authorId?: string;
 }
 
 export interface PlatformConfig {
   name: string;
   baseUrl: string;
   accentColor: string;
+}
+
+export interface AudioTrack {
+  id: string;
+  title: string;
+  artist: string;
+  videoId: string;
+  duration?: number;
+  thumbnailUrl?: string;
+  publishedAt?: string;
 }

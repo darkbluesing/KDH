@@ -20,8 +20,8 @@ export const PLATFORM_BADGES = {
     label: "YouTube",
     gradient: "linear-gradient(135deg, #FF0000, #EF233C)",
   },
-  instagram: {
-    label: "Instagram",
-    gradient: "linear-gradient(135deg, #FEDA75, #D62976, #6228D7)",
+  tiktok: {
+    label: "TikTok",
+    gradient: "linear-gradient(135deg, #25F4EE, #FE2C55)",
   },
 } as const;

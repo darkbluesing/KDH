@@ -1,0 +1,21 @@
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+[[plugins]]
+  package = "@netlify/next"
+
+[dev]
+  command = "npm run dev"
+  framework = "next"
+  targetPort = 3000
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/__render"
+  status = 200

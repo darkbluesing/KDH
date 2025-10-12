@@ -8,9 +8,12 @@ dev-debug.log
 
 # Dependency directories
 node_modules/
+.venv/
+venv/
 
 # Environment variables
 .env
+.env.*
 
 # Editor directories and files
 .idea
@@ -20,6 +23,15 @@ node_modules/
 *.njsproj
 *.sln
 *.sw?
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Test and build output
+frontend/playwright-report/
+frontend/test-results/
 
 # OS specific
 .DS_Store

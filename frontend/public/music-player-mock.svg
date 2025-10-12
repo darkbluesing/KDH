@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#14142b" />
+      <stop offset="100%" stop-color="#2b174f" />
+    </linearGradient>
+    <linearGradient id="progress" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#a259ff" />
+      <stop offset="100%" stop-color="#457dff" />
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="720" height="360" rx="36" fill="url(#bg)" />
+  <rect x="36" y="36" width="168" height="168" rx="24" fill="#1f1f3d" />
+  <text x="120" y="132" text-anchor="middle" fill="#ffffff" font-family="'Inter', sans-serif" font-size="36" font-weight="600">KDH</text>
+  <text x="228" y="88" fill="#a7b3ff" font-family="'Inter', sans-serif" font-size="20" letter-spacing="0.12em">NOW PLAYING</text>
+  <text x="228" y="138" fill="#ffffff" font-family="'Inter', sans-serif" font-size="32" font-weight="600">Neon Blade (Live)</text>
+  <text x="228" y="174" fill="#c6cbe0" font-family="'Inter', sans-serif" font-size="20">K-POP Demon Hunters OST</text>
+  <rect x="228" y="214" width="456" height="18" rx="9" fill="#312a54" />
+  <rect x="228" y="214" width="276" height="18" rx="9" fill="url(#progress)" />
+  <circle cx="504" cy="223" r="15" fill="#ffffff" />
+  <text x="228" y="255" fill="#70789f" font-family="'Inter', sans-serif" font-size="16">01:42</text>
+  <text x="666" y="255" text-anchor="end" fill="#70789f" font-family="'Inter', sans-serif" font-size="16">03:56</text>
+  <g transform="translate(228, 280)">
+    <circle cx="0" cy="0" r="28" fill="#1f1f3d" />
+    <polygon points="-6,-10 -6,10 10,0" fill="#ffffff" />
+  </g>
+  <g transform="translate(300, 280)">
+    <circle cx="0" cy="0" r="36" fill="#a259ff" />
+    <polygon points="-9,-14 -9,14 12,0" fill="#ffffff" />
+  </g>
+  <g transform="translate(384, 280)">
+    <circle cx="0" cy="0" r="28" fill="#1f1f3d" />
+    <rect x="-6" y="-12" width="4" height="24" rx="2" fill="#ffffff" />
+    <rect x="4" y="-12" width="4" height="24" rx="2" fill="#ffffff" />
+  </g>
+  <g transform="translate(468, 280)">
+    <circle cx="0" cy="0" r="28" fill="#1f1f3d" />
+    <path d="M-7 -12 h8 l12 12 -12 12 h-8 v-24" fill="#ffffff" />
+  </g>
+  <g transform="translate(540, 280)">
+    <circle cx="0" cy="0" r="28" fill="#1f1f3d" />
+    <circle cx="0" cy="0" r="6" fill="#ffffff" />
+    <path d="M0 -12 a12 12 0 1 1 0 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" />
+  </g>
+</svg>

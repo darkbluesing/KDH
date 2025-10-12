@@ -111,7 +111,7 @@
             "title": "레이아웃 QA 및 문서화",
             "description": "구현한 레이아웃을 점검하고 주요 결정 사항을 문서로 남깁니다.",
             "details": "디자인 시안과 비교해 시각적 일관성을 확인하고, README나 노션 등 협업 문서에 적용 결과와 TODO를 정리합니다.",
-            "status": "pending",
+            "status": "in-progress",
             "dependencies": [],
             "parentTaskId": 2
           }
@@ -595,7 +595,7 @@
     ],
     "metadata": {
       "created": "2025-09-22T14:44:40.386Z",
-      "updated": "2025-09-22T21:39:09.397Z",
+      "updated": "2025-09-22T21:49:36.368Z",
       "description": "Tasks for master context"
     }
   }

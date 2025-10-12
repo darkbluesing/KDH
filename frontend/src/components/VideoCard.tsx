@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import Image from "next/image";
 import type { VideoItem } from "@/lib/types";
 
 type VideoCardProps = {
@@ -7,13 +8,9 @@ type VideoCardProps = {
   video: VideoItem;
 };
 
-const gradientBySource: Record<string, string> = {
-  instagram: "bg-[radial-gradient(circle_at_top,#A259FF_0%,rgba(5,6,10,0.35)_60%)]",
-  youtube: "bg-[radial-gradient(circle_at_top,#EF233C_0%,rgba(5,6,10,0.35)_60%)]",
-};
-
 export function VideoCard({ index, onSelect, video }: VideoCardProps) {
-  const { title, source, viewCount, channelName } = video;
+  const { title, source, viewCount, channelName, thumbnailUrl } = video;
+  const altText = `${title} 썸네일`;
 
   return (
     <article
@@ -30,19 +27,31 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
         type="button"
       />
 
+      <div className="absolute inset-0 z-0">
+        {thumbnailUrl ? (
+          <Image
+            alt={altText}
+            className="size-full object-cover object-center"
+            priority={index < 12}
+            sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 18vw, (min-width: 768px) 28vw, 42vw"
+            src={thumbnailUrl}
+            fill
+          />
+        ) : (
+          <div aria-hidden="true" className="size-full bg-neutral-900" />
+        )}
+      </div>
+
       <div
         aria-hidden={true}
-        className={clsx(
-          "absolute inset-0 z-0 h-full w-full opacity-80 transition duration-500 group-hover:opacity-95",
-          gradientBySource[source] ?? gradientBySource.youtube
-        )}
+        className="absolute inset-0 z-[1] h-full w-full bg-gradient-to-b from-black/20 via-black/10 to-black/60 opacity-80 transition duration-500 group-hover:opacity-95"
       />
 
-      <div aria-hidden={true} className="absolute inset-0 z-0 bg-grid-overlay opacity-60" />
+      <div aria-hidden={true} className="absolute inset-0 z-[2] bg-grid-overlay opacity-60" />
 
       <div className="relative z-10 flex h-full flex-col justify-between bg-gradient-to-b from-black/10 via-transparent to-black/55 p-4">
         <header className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.25em] text-kdh-metallic-silver/80">
-          <span>{source === "youtube" ? "YouTube" : "Instagram"}</span>
+          <span>{source === "youtube" ? "YouTube" : "TikTok"}</span>
           <span>{String(index + 1).padStart(3, "0")}</span>
         </header>
 
@@ -57,8 +66,8 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
         </div>
       </div>
 
-      <div className="absolute inset-0 rounded-2xl border border-kdh-neon-purple/20 opacity-0 transition duration-300 group-hover:opacity-100" />
-      <div className="absolute inset-0 rounded-2xl opacity-0 transition duration-300 group-hover:animate-ripple group-hover:opacity-100" />
+      <div className="absolute inset-0 z-[3] rounded-2xl border border-kdh-neon-purple/20 opacity-0 transition duration-300 group-hover:opacity-100" />
+      <div className="absolute inset-0 z-[4] rounded-2xl opacity-0 transition duration-300 group-hover:animate-ripple group-hover:opacity-100" />
     </article>
   );
 }

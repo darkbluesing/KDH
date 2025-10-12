@@ -1,4 +1,4 @@
----
+---npx task-master parse-prd ./script/prd.txt 
 
 # 📄 PRD: K-POP Demon Hunters 쇼츠모음 반응형 웹페이지 (최종 확정본)
 

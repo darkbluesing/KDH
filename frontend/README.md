@@ -46,6 +46,18 @@ frontend/
 - 디자인 토큰은 차후 스토리북/디자인 QA 단계에서 확장할 수 있도록 모듈화되어 있습니다.
 
 ## 환경 변수
-- `.env.example`를 복사해 `.env`를 만들고 API 키를 채워주세요.
+- `.env.example`를 복사해 `.env.local`을 만들고 API 키를 채워주세요.
+- YouTube 연동을 위해서는 `YOUTUBE_API_KEY`와 검색 쿼리(`YOUTUBE_SEARCH_QUERY`) 또는 `YOUTUBE_CHANNEL_ID` 중 하나가 필요합니다. 채널 대신 특정 재생목록만 사용할 경우 `YOUTUBE_PLAYLIST_ID`를 설정하거나 `NEXT_PUBLIC_YOUTUBE_PLAYLIST_ID`로 덮어쓸 수 있습니다.
 - 최소 `OPENAI_API_KEY` 또는 `PERPLEXITY_API_KEY`가 있어야 Task Master 및 AI 기능이 동작합니다.
 - 클라이언트에 노출되면 안 되는 값은 서버 컴포넌트나 API Route에서만 사용하세요.
+
+## Instagram 크롤러 사용법
+
+```bash
+pip install selenium webdriver-manager
+python crawler.py
+```
+
+- 크롤러는 Selenium 기반으로 `kpopdemonhunters` 계정에서 최대 100개의 릴스를 수집해 `frontend/public/reels.json`에 저장합니다. 각 항목에는 `permalink`, `thumbnail_url`, `caption`이 포함됩니다.
+- Netlify 배포 시 `reels.json`은 정적 자산으로 제공되며, 프런트엔드는 이를 fetch 해서 Instagram embed.js로 lazy load 렌더링합니다.
+- 크롤러 실행 시 Chrome/Chromium이 필요하며, 서버 환경에서는 헤드리스 모드로 동작합니다.

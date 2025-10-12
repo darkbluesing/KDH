@@ -99,7 +99,7 @@ export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
                   광고 안내
                 </span>
                 <h2 className="text-2xl font-semibold text-white">
-                  Demon Hunters X {payload.source === "youtube" ? "YouTube" : "Instagram"}
+                  Demon Hunters X {payload.source === "youtube" ? "YouTube" : "TikTok"}
                 </h2>
                 <p className="text-sm leading-relaxed text-slate-300">
                   {payload.title} 영상을 시청하기 전에 Demon Hunters 세계관 스페셜 캠페인을 만나보세요.
@@ -120,21 +120,21 @@ export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
               </div>
 
               <div className="flex flex-wrap gap-3">
+                <button
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-[13px] font-semibold uppercase tracking-[0.25em] text-slate-200 transition hover:border-kdh-bloody-red/60 hover:text-white"
+                  onClick={onClose}
+                  type="button"
+                >
+                  영상 재생하기
+                </button>
                 <a
                   className="group inline-flex items-center gap-2 rounded-full border border-kdh-neon-purple/60 bg-kdh-neon-purple/20 px-5 py-3 text-[13px] font-semibold uppercase tracking-[0.25em] text-white transition hover:border-kdh-electric-blue/60 hover:bg-kdh-electric-blue/25"
                   href="https://www.youtube.com/results?search_query=K-POP+Demon+Hunters"
                   rel="noreferrer"
                   target="_blank"
                 >
-                  영상으로 이동
+                  공식 채널 방문
                 </a>
-                <button
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 px-5 py-3 text-[13px] font-semibold uppercase tracking-[0.25em] text-slate-200 transition hover:border-kdh-bloody-red/60 hover:text-white"
-                  onClick={onClose}
-                  type="button"
-                >
-                  나중에 보기
-                </button>
               </div>
             </div>
           </motion.div>

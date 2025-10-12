@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TikTok Grid · {{ keyword }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  </head>
+  <body>
+    <header class="page-header">
+      <div class="header-content">
+        <h1>TikTok Highlights</h1>
+        <p class="subtitle">
+          Showing up to 100 results for
+          <strong>#{{ keyword }}</strong>
+        </p>
+        <p class="count">현재 {{ total }}개의 영상을 표시 중입니다.</p>
+      </div>
+      <form class="search" method="get" action="{{ url_for('index') }}">
+        <label for="keyword" class="sr-only">검색어</label>
+        <input
+          id="keyword"
+          name="q"
+          type="text"
+          value="{{ keyword }}"
+          placeholder="Search TikTok keyword"
+          autocomplete="off"
+          required
+        />
+        <button type="submit">Search</button>
+        <a class="refresh" href="{{ url_for('refresh', q=keyword) }}" title="강제 새로고침">
+          Refresh
+        </a>
+      </form>
+    </header>
+
+    {% if error_message %}
+      <div class="alert alert-error">
+        <strong>크롤링 오류</strong>
+        <p>{{ error_message }}</p>
+      </div>
+    {% elif from_cache %}
+      <div class="alert alert-info">
+        Showing cached results ({{ total }} videos). Use Refresh to try again.
+      </div>
+    {% endif %}
+
+    <main>
+      {% if videos %}
+        <section class="reels-grid" aria-label="TikTok video grid">
+          {% for video in videos %}
+            <article class="reel-card">
+              <figure class="player">
+                {% if video.thumbnail_url %}
+                  <img
+                    class="thumbnail"
+                    src="{{ video.thumbnail_url }}"
+                    alt="TikTok preview by @{{ video.author_id }}"
+                    loading="lazy"
+                  />
+                {% endif %}
+                <blockquote
+                  class="tiktok-embed"
+                  cite="{{ video.video_url }}"
+                  data-video-id="{{ video.video_id }}"
+                  data-embed-from="crawler"
+                  style="max-width: 100%;"
+                >
+                  <section>
+                    <a href="{{ video.video_url }}" target="_blank" rel="noopener">@{{ video.author_id }}</a>
+                    {% if video.title %}
+                      <p>{{ video.title }}</p>
+                    {% endif %}
+                  </section>
+                </blockquote>
+              </figure>
+              <footer class="meta">
+                <a class="author" href="{{ video.video_url }}" target="_blank" rel="noopener">
+                  @{{ video.author_id }}
+                </a>
+                {% if video.title %}
+                  <p class="title">{{ video.title }}</p>
+                {% endif %}
+              </footer>
+            </article>
+          {% endfor %}
+        </section>
+      {% else %}
+        <p class="empty-state">No TikTok videos available for this keyword yet.</p>
+      {% endif %}
+    </main>
+    <script async src="https://www.tiktok.com/embed.js"></script>
+  </body>
+</html>

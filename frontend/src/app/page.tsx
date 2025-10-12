@@ -1,142 +1,236 @@
 'use client';
 
-import clsx from "clsx";
-import { useMemo, useState } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AdModal } from "@/components/AdModal";
+import { VideoModal } from "@/components/VideoModal";
 import { SideBanner } from "@/components/SideBanner";
 import { VideoGrid } from "@/components/VideoGrid";
-import { useModalState } from "@/hooks/useModalState";
-import { FEATURED_VIDEOS, MOCK_VIDEOS } from "@/lib/mockVideos";
+import { MOCK_VIDEOS } from "@/lib/mockVideos";
 import type { VideoItem, VideoSource } from "@/lib/types";
+import { fetchCombinedVideos } from "@/services/videoService";
 
 const FILTER_TABS: Array<{ id: "all" | VideoSource; label: string }> = [
   { id: "all", label: "All" },
   { id: "youtube", label: "YouTube" },
-  { id: "instagram", label: "Instagram" },
+  { id: "tiktok", label: "TikTok" },
 ];
 
+const YOUTUBE_FALLBACK = MOCK_VIDEOS.filter((video) => video.source === "youtube");
+const TIKTOK_FALLBACK = MOCK_VIDEOS.filter((video) => video.source === "tiktok");
+
+function interleaveCollections(youtubeClips: VideoItem[], tiktokClips: VideoItem[]): VideoItem[] {
+  const maxLength = Math.max(youtubeClips.length, tiktokClips.length);
+  const interleaved: VideoItem[] = [];
+  const usedIds = new Set<string>();
+
+  for (let index = 0; index < maxLength; index += 1) {
+    const youtubeClip = youtubeClips[index];
+    const tiktokClip = tiktokClips[index];
+
+    if (youtubeClip && !usedIds.has(youtubeClip.id)) {
+      usedIds.add(youtubeClip.id);
+      interleaved.push(youtubeClip);
+    }
+
+    if (tiktokClip && !usedIds.has(tiktokClip.id)) {
+      usedIds.add(tiktokClip.id);
+      interleaved.push(tiktokClip);
+    }
+  }
+
+  return interleaved;
+}
+
+const INITIAL_ALL_VIDEOS = interleaveCollections(YOUTUBE_FALLBACK, TIKTOK_FALLBACK);
+
 export default function Home() {
-  const { isOpen, open, close, payload } = useModalState<VideoItem>();
   const [activeFilter, setActiveFilter] = useState<"all" | VideoSource>("all");
+  const [videos, setVideos] = useState<VideoItem[]>(INITIAL_ALL_VIDEOS);
+  const [youtubeVideos, setYoutubeVideos] = useState<VideoItem[]>(YOUTUBE_FALLBACK);
+  const [tiktokVideos, setTiktokVideos] = useState<VideoItem[]>(TIKTOK_FALLBACK);
+  const [isVideosLoading, setIsVideosLoading] = useState(false);
+  const [isAdOpen, setIsAdOpen] = useState(false);
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
+
+  const isMountedRef = useRef(true);
+
+  const loadVideos = useCallback(async () => {
+    setIsVideosLoading(true);
+
+    const latestVideos = await fetchCombinedVideos();
+
+    if (!isMountedRef.current) {
+      return;
+    }
+
+    if (latestVideos.length) {
+      const youtubeOnly = latestVideos.filter((video) => video.source === "youtube");
+      const tiktokOnly = latestVideos.filter((video) => video.source === "tiktok");
+
+      const youtubePool = youtubeOnly.length ? youtubeOnly : YOUTUBE_FALLBACK;
+      const tiktokPool = tiktokOnly.length ? tiktokOnly : TIKTOK_FALLBACK;
+      const combined = latestVideos.length ? latestVideos : interleaveCollections(youtubePool, tiktokPool);
+
+      setYoutubeVideos(youtubePool);
+      setTiktokVideos(tiktokPool);
+      setVideos(combined.length ? combined : INITIAL_ALL_VIDEOS);
+    } else {
+      setYoutubeVideos(YOUTUBE_FALLBACK);
+      setTiktokVideos(TIKTOK_FALLBACK);
+      setVideos(INITIAL_ALL_VIDEOS);
+    }
+
+    setIsVideosLoading(false);
+  }, []);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    loadVideos();
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [loadVideos]);
 
   const filteredVideos = useMemo(() => {
     if (activeFilter === "all") {
-      return MOCK_VIDEOS;
+      return videos;
     }
-    return MOCK_VIDEOS.filter((video) => video.source === activeFilter);
-  }, [activeFilter]);
 
-  const featured = useMemo(() => FEATURED_VIDEOS, []);
+    if (activeFilter === "youtube") {
+      return youtubeVideos.length ? youtubeVideos : YOUTUBE_FALLBACK;
+    }
+
+    return tiktokVideos.length ? tiktokVideos : TIKTOK_FALLBACK;
+  }, [activeFilter, videos, youtubeVideos, tiktokVideos]);
+
+  const handleVideoSelect = useCallback((video: VideoItem) => {
+    setSelectedVideo(video);
+    setIsVideoOpen(false);
+    setIsAdOpen(true);
+  }, []);
+
+  const handleAdClose = useCallback(() => {
+    setIsAdOpen(false);
+    if (selectedVideo) {
+      setTimeout(() => {
+        setIsVideoOpen(true);
+      }, 200);
+    }
+  }, [selectedVideo]);
+
+  const handleVideoClose = useCallback(() => {
+    setIsVideoOpen(false);
+    setSelectedVideo(null);
+  }, []);
 
   return (
-    <div className="relative isolate overflow-hidden">
+    <div className="relative isolate overflow-visible">
       <div className="pointer-events-none absolute inset-x-0 top-0 z-0 blur-3xl">
         <div className="mx-auto h-72 w-full max-w-4xl bg-[radial-gradient(circle_at_top,rgba(162,89,255,0.35),transparent_60%)]" />
       </div>
 
-      <SideBanner
-        headline="Demon Hunters OST"
-        position="left"
-        subline="네온 심포니 한정판 바이닐과 프리미엄 굿즈를 지금 예약하세요."
-      />
-      <SideBanner
-        headline="Night Parade Tour"
-        position="right"
-        subline="서울 월드 아레나 5월 20일 — 얼리버드 티켓 오픈"
-      />
-
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-[1200px] flex-col gap-16 px-5 pb-32 pt-10 sm:px-8 lg:px-12">
-        <header className="flex flex-wrap items-center justify-between gap-6">
-          <div className="flex items-center gap-3 text-sm uppercase tracking-[0.4em] text-kdh-metallic-silver/70">
-            <span className="size-2 rounded-full bg-kdh-bloody-red shadow-neon" />
-            KDH SHORTS COMMAND
-          </div>
-          <nav className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.35em] text-slate-300">
-            <a className="rounded-full border border-white/10 px-4 py-2 transition hover:border-kdh-neon-purple/60 hover:text-white" href="#grid">
-              Grid
-            </a>
-            <a className="rounded-full border border-white/10 px-4 py-2 transition hover:border-kdh-neon-purple/60 hover:text-white" href="#featured">
-              Featured
-            </a>
-            <a className="rounded-full border border-white/10 px-4 py-2 transition hover:border-kdh-neon-purple/60 hover:text-white" href="#updates">
-              Updates
-            </a>
-          </nav>
-        </header>
-
-        <section className="flex flex-col gap-12 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl space-y-6">
-            <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] uppercase tracking-[0.35em] text-kdh-metallic-silver/80 backdrop-blur">
-              Realm Archive 7x20
-            </div>
-            <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
-              7x20 시네마틱 그리드에서 만나는 Demon Hunters 세계
-            </h1>
-            <p className="text-base leading-relaxed text-slate-300 sm:text-lg">
-              팬들이 사랑하는 하이라이트, 직캠, 리허설까지 — YouTube와 Instagram에 흩어져 있는 모든 Demon Hunters 숏폼 콘텐츠를 한 곳에서 탐색하세요. 네온 애니메이션과 다크 판타지 UI가 몰입감을 극대화합니다.
-            </p>
-            <div className="flex flex-wrap gap-4" id="updates">
-              <button
-                className="group relative overflow-hidden rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-kdh-metallic-silver shadow-neon transition hover:border-kdh-neon-purple hover:text-white"
-                onClick={() => open(featured[0])}
-                type="button"
-              >
-                <span className="absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_top_right,rgba(162,89,255,0.45),transparent_55%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                실시간 업데이트 보기
-              </button>
-              <button
-                className="rounded-full border border-white/15 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-slate-200 transition hover:border-kdh-bloody-red/60 hover:text-white"
-                onClick={() => open(featured[1])}
-                type="button"
-              >
-                제작 비하인드 열람
-              </button>
-            </div>
-          </div>
-
-          <dl className="grid w-full max-w-md grid-cols-2 gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 text-center text-sm uppercase tracking-[0.3em] text-kdh-metallic-silver/90 backdrop-blur" id="featured">
-            <div>
-              <dt className="text-[10px] text-kdh-metallic-silver/60">Daily Sync</dt>
-              <dd className="mt-2 font-display text-3xl text-white">+42</dd>
-            </div>
-            <div>
-              <dt className="text-[10px] text-kdh-metallic-silver/60">View Rank</dt>
-              <dd className="mt-2 font-display text-3xl text-white">Top 1%</dd>
-            </div>
-            <div className="col-span-2">
-              <dt className="text-[10px] text-kdh-metallic-silver/60">Active Fandom</dt>
-              <dd className="mt-2 font-display text-3xl text-white">38,204 Hunters</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="space-y-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h2 className="text-xl font-semibold text-white">콘텐츠 필터</h2>
-            <div className="flex flex-wrap gap-3">
-              {FILTER_TABS.map((tab) => (
+      <div className="relative z-10 mx-auto min-h-screen w-full max-w-none px-[10px] pb-20 pt-1 sm:pt-2">
+        <main className="mx-auto flex w-full max-w-[1380px] flex-col gap-10 rounded-[32px] bg-black/10 px-[10px] pb-6 pt-2 sm:pt-3 lg:-mt-10 xl:-mt-16 backdrop-blur-sm">
+          <section className="flex flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-12">
+            <div className="max-w-2xl space-y-6">
+              <div className="relative mx-auto max-w-7xl overflow-visible">
+                <Image
+                  alt="K-POP Demon Hunters Logo"
+                  className="h-auto w-full origin-top -translate-y-2 scale-110 sm:-translate-y-3 sm:scale-[1.2] lg:-translate-y-4 lg:scale-[1.3]"
+                  height={200}
+                  src="/main_logo.png"
+                  width={600}
+                  priority
+                />
+              </div>
+              <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+                Discover the K-POP Demon Hunters world in the cinematic grid
+              </h1>
+              <p className="text-base leading-relaxed text-slate-300 sm:text-lg">
+                Browse every fan-favorite highlight, fancam, and rehearsal clip—uniting Demon Hunters shorts scattered across YouTube and TikTok into one immersive feed.
+              </p>
+              <div className="flex flex-wrap gap-4" id="updates">
                 <button
-                  className={clsx(
-                    "rounded-full border px-4 py-2 text-xs uppercase tracking-[0.3em] transition",
-                    activeFilter === tab.id
-                      ? "border-kdh-neon-purple/70 bg-kdh-neon-purple/20 text-white"
-                      : "border-white/10 text-kdh-metallic-silver/80 hover:border-kdh-electric-blue/60 hover:text-white"
-                  )}
-                  key={tab.id}
-                  onClick={() => setActiveFilter(tab.id)}
+                  className="group relative overflow-hidden rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-kdh-metallic-silver shadow-neon transition hover:border-kdh-neon-purple hover:text-white"
+                  disabled={isVideosLoading}
+                  onClick={loadVideos}
                   type="button"
                 >
-                  {tab.label}
+                  <span className="absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_top_right,rgba(162,89,255,0.45),transparent_55%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                  Refresh Videos
                 </button>
-              ))}
+              </div>
             </div>
+            <div className="flex flex-col gap-6 lg:mt-[120px] xl:mt-[140px]">
+              <div className="rounded-[28px] border border-white/10 bg-gradient-to-br from-kdh-deep-black/80 via-kdh-charcoal/60 to-black/60 p-0.5 shadow-[0_25px_60px_rgba(20,0,40,0.45)]">
+                <div className="rounded-[24px] border border-white/5 bg-black/40 p-2 sm:p-3">
+                  <div className="aspect-video w-full overflow-hidden rounded-2xl border border-white/5">
+                    <iframe
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      className="h-full w-full"
+                      height="315"
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      src="https://www.youtube.com/embed/videoseries?si=RGMOSKy2NrhLsfXb&amp;list=PLVfChAjsg5xNo48alTI6acCZG5qjA8I8W"
+                      title="YouTube video player"
+                      width="560"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <dl className="grid w-full max-w-4xl grid-cols-1 gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 text-left text-sm text-white backdrop-blur" id="featured">
+                <div className="space-y-3 leading-relaxed">
+                  <div className="flex items-start gap-3">
+                    <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-neon-purple/70 shadow-[0_0_16px_rgba(162,89,255,0.65)]" />
+                    <p className="text-sm font-medium text-white whitespace-nowrap">First Netflix film with 300 million+ views, all-time No.1.</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-electric-blue/60 shadow-[0_0_12px_rgba(69,137,255,0.6)]" />
+                    <p className="text-sm font-medium text-white whitespace-nowrap">Eight OST tracks on Billboard Hot 100, &#39;Golden&#39; No.1 for five weeks.</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-metallic-silver/70 shadow-[0_0_12px_rgba(196,203,223,0.45)]" />
+                    <p className="text-sm font-medium text-white whitespace-nowrap">Simultaneous No.1 on Billboard 200, Hot 100, and Global 200 charts.</p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-bloody-red/70 shadow-[0_0_14px_rgba(255,69,100,0.55)]" />
+                    <p className="text-sm font-medium text-white whitespace-nowrap">No.1 on Netflix Global Top 10 Movies list.</p>
+                  </div>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,160px)_minmax(0,1fr)_minmax(0,160px)] lg:gap-x-[10px] lg:items-start">
+            <SideBanner position="left" />
+
+            <section className="space-y-8" id="grid">
+              {isVideosLoading ? (
+                <p className="text-sm text-kdh-metallic-silver/70">YouTube 최신 영상을 불러오는 중입니다...</p>
+              ) : null}
+
+              <VideoGrid
+                activeFilter={activeFilter}
+                filterTabs={FILTER_TABS}
+                onFilterChange={setActiveFilter}
+                onSelect={handleVideoSelect}
+                sectionId="grid"
+                videos={filteredVideos}
+              />
+            </section>
+
+            <SideBanner position="right" />
           </div>
+        </main>
+      </div>
 
-          <VideoGrid onSelect={open} sectionId="grid" videos={filteredVideos} />
-        </section>
-      </main>
-
-      <AdModal isOpen={isOpen} onClose={close} payload={payload} />
+      <AdModal isOpen={isAdOpen} onClose={handleAdClose} payload={selectedVideo} />
+      <VideoModal isOpen={isVideoOpen} onClose={handleVideoClose} payload={isVideoOpen ? selectedVideo : null} />
     </div>
   );
 }

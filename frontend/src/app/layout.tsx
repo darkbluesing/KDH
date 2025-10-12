@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -17,12 +18,12 @@ const spaceGrotesk = Space_Grotesk({
 export const metadata: Metadata = {
   title: "K-POP Demon Hunters Shorts Hub",
   description:
-    "K-POP Demon Hunters 세계관의 YouTube & Instagram 숏폼을 한 번에 탐색하는 시네마틱 허브",
+    "K-POP Demon Hunters 세계관의 YouTube & TikTok 숏폼을 한 번에 탐색하는 시네마틱 허브",
   keywords: [
     "K-POP Demon Hunters",
     "Shorts",
     "YouTube",
-    "Instagram Reels",
+    "TikTok Clips",
     "Fan Hub",
     "Dark Fantasy UI",
   ],
@@ -30,7 +31,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "K-POP Demon Hunters Shorts Hub",
     description:
-      "YouTube와 Instagram의 Demon Hunters 숏폼을 모아보는 7x20 그리드 허브",
+      "YouTube와 TikTok의 Demon Hunters 숏폼을 모아보는 7x20 그리드 허브",
     type: "website",
     locale: "ko_KR",
   },
@@ -47,6 +48,7 @@ export default function RootLayout({
         className={`${inter.variable} ${spaceGrotesk.variable} min-h-screen text-slate-100`}
       >
         <div className="relative min-h-screen">{children}</div>
+        <Script async src="https://www.tiktok.com/embed.js" />
       </body>
     </html>
   );
