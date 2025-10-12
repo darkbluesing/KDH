@@ -8,7 +8,7 @@ from typing import Optional
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
-from crawler import DEFAULT_KEYWORD, CrawlerResult, get_tiktok_videos
+# from crawler import DEFAULT_KEYWORD, CrawlerResult, get_tiktok_videos
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -70,15 +70,15 @@ def get_youtube_videos(query: str, limit: int = 100) -> list[YouTubeVideo]:
 
 
 
-def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
-    videos = []
-    for video in result.videos:
-        video_dict = asdict(video)
-        # The frontend expects a `mediaUrl` field for direct video playback.
-        video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
-        video_dict["authorId"] = video.author_id
-        videos.append(video_dict)
-    return videos
+# def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
+#     videos = []
+#     for video in result.videos:
+#         video_dict = asdict(video)
+#         # The frontend expects a `mediaUrl` field for direct video playback.
+#         video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
+#         video_dict["authorId"] = video.author_id
+#         videos.append(video_dict)
+#     return videos
 
 
 @app.route("/")
@@ -119,23 +119,12 @@ def _resolve_keyword(raw_keywords: Optional[str]) -> List[str]:
 
 @app.route("/api/videos")
 def api_videos():
-    keywords = _resolve_keyword(request.args.get("q"))
-    refresh_requested = request.args.get("refresh") == "1"
-    limit = int(request.args.get("limit", 100))
-    cursor = int(request.args.get("cursor", 0)) if request.args.get("cursor") else None
-
-    result = get_tiktok_videos(keywords, num_videos=limit, force_refresh=refresh_requested, cursor=cursor)
-    status_code = 503 if result.error and not result.videos else 200
+    print("Accessed /api/videos endpoint for Hello World test.")
     payload = {
-        "keywords": keywords,
-        "total": len(result.videos),
-        "from_cache": result.from_cache,
-        "videos": _serialize_videos(result),
-        "next_cursor": result.next_cursor,
+        "message": "Hello World! The backend is alive.",
+        "videos": [],
     }
-    if result.error:
-        payload["error"] = result.error
-    return jsonify(payload), status_code
+    return jsonify(payload), 200
 
 
 @app.route("/api/youtube/videos")
