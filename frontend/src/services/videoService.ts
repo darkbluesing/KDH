@@ -1,24 +1,13 @@
 import type { VideoItem, VideoSource } from "@/lib/types";
 import { MOCK_VIDEOS } from "@/lib/mockVideos";
+import { extractTikTokVideos, type StaticTikTokPayload } from "@/lib/tiktokStatic";
 
 const YOUTUBE_VIDEOS_ENDPOINT = "/api/youtube/videos";
 const TIKTOK_API_ENDPOINT = "/api/videos";
-const TIKTOK_CACHE_JSON = "/tiktok.json";
+const TIKTOK_STATIC_SOURCES = ["/tiktok_live.json", "/tiktok.json"];
 
 const YOUTUBE_FALLBACK = MOCK_VIDEOS.filter((video) => video.source === "youtube");
 const TIKTOK_FALLBACK = MOCK_VIDEOS.filter((video) => video.source === "tiktok");
-
-type StaticTikTokEntry = {
-  permalink: string;
-  thumbnail_url?: string;
-  caption?: string;
-};
-
-type StaticTikTokPayload = {
-  fetched_at?: number;
-  count?: number;
-  reels?: StaticTikTokEntry[];
-};
 
 type CacheEntry = {
   expiresAt: number;
@@ -99,30 +88,15 @@ async function fetchTikTokFromApi(limit: number, keywords: string[]): Promise<Vi
 }
 
 async function fetchTikTokFromStatic(): Promise<VideoItem[]> {
-  const data = await safeFetchJson<StaticTikTokPayload>(TIKTOK_CACHE_JSON, { cache: "no-store" });
-  const entries = data?.reels ?? [];
-
-  if (!entries.length) {
-    return TIKTOK_FALLBACK;
+  for (const path of TIKTOK_STATIC_SOURCES) {
+    const data = await safeFetchJson<StaticTikTokPayload>(path, { cache: "no-store" });
+    const videos = extractTikTokVideos(data);
+    if (videos.length) {
+      return videos;
+    }
   }
 
-  return entries.map((entry) => {
-    const permalink = entry.permalink;
-    const idMatch = permalink.match(/video\/(\d+)/);
-    const videoId = idMatch ? idMatch[1] : permalink;
-    const mediaUrl = (entry as Record<string, unknown>).media_url;
-    const authorHandle = "kpopdemonhunters";
-    return {
-      id: videoId,
-      title: entry.caption ? entry.caption.slice(0, 140) : "TikTok Clip",
-      source: "tiktok",
-      channelName: `@${authorHandle}`,
-      authorId: authorHandle,
-      thumbnailUrl: entry.thumbnail_url || undefined,
-      permalink,
-      mediaUrl: typeof mediaUrl === "string" ? mediaUrl : undefined,
-    } satisfies VideoItem;
-  });
+  return TIKTOK_FALLBACK;
 }
 
 export async function fetchVideosBySource(source: VideoSource): Promise<VideoItem[]> {
