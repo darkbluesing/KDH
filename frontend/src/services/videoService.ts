@@ -123,10 +123,14 @@ export async function fetchCombinedVideos(): Promise<VideoItem[]> {
     return cached.payload;
   }
 
-  const [youtubeData, tiktokVideos] = await Promise.all([
+  let [youtubeData, tiktokVideos] = await Promise.all([
     safeFetchJson<{ videos: VideoItem[] }>(`${YOUTUBE_VIDEOS_ENDPOINT}?limit=${DEFAULT_FETCH_LIMIT}`),
     fetchTikTokFromApi(DEFAULT_FETCH_LIMIT, DEFAULT_TIKTOK_KEYWORDS),
   ]);
+
+  if (!tiktokVideos.length) {
+    tiktokVideos = await fetchTikTokFromStatic();
+  }
 
   const youtubeVideos = youtubeData?.videos ?? [];
 
