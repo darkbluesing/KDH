@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import asdict, dataclass
-from typing import Optional
+from typing import List, Optional
 
 from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
-# from crawler import DEFAULT_KEYWORD, CrawlerResult, get_tiktok_videos
+from crawler import DEFAULT_KEYWORD, CrawlerResult, get_tiktok_videos
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -70,15 +71,15 @@ def get_youtube_videos(query: str, limit: int = 100) -> list[YouTubeVideo]:
 
 
 
-# def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
-#     videos = []
-#     for video in result.videos:
-#         video_dict = asdict(video)
-#         # The frontend expects a `mediaUrl` field for direct video playback.
-#         video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
-#         video_dict["authorId"] = video.author_id
-#         videos.append(video_dict)
-#     return videos
+def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
+    videos = []
+    for video in result.videos:
+        video_dict = asdict(video)
+        # The frontend expects a `mediaUrl` field for direct video playback.
+        video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
+        video_dict["authorId"] = video.author_id
+        videos.append(video_dict)
+    return videos
 
 
 @app.route("/")
@@ -119,12 +120,15 @@ def _resolve_keyword(raw_keywords: Optional[str]) -> List[str]:
 
 @app.route("/api/videos")
 def api_videos():
-    print("Accessed /api/videos endpoint for Hello World test.")
-    payload = {
-        "message": "Hello World! The backend is alive.",
-        "videos": [],
-    }
-    return jsonify(payload), 200
+    keywords = _resolve_keyword(request.args.get("q"))
+    limit = int(request.args.get("limit", 100))
+    result = get_tiktok_videos(keywords, num_videos=limit)
+    return jsonify({
+        "keyword": keywords,
+        "total": len(result.videos),
+        "from_cache": result.from_cache,
+        "videos": _serialize_videos(result),
+    })
 
 
 @app.route("/api/youtube/videos")
