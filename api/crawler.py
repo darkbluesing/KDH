@@ -107,14 +107,14 @@ def _extract_videos(data_block: Iterable[dict[str, object]]) -> list[TikTokVideo
     return videos
 
 
-async def _fetch_tiktok_videos_async(keywords: List[str], num_videos: int, *, headless: bool, initial_cursor: Optional[int] = None) -> tuple[List[TikTokVideo], Optional[int]]:
+async def _fetch_tiktok_videos_async(keywords: List[str], num_videos: int, *, initial_cursor: Optional[int] = None) -> tuple[List[TikTokVideo], Optional[int]]:
     logger.info("Calling _fetch_tiktok_videos_async for keywords: %s, num_videos: %d", keywords, num_videos)
     all_videos: list[TikTokVideo] = []
     seen_ids: set[str] = set()
     last_cursor: Optional[int] = initial_cursor
 
     async with TikTokApi() as api:
-        await api.create_sessions(num_sessions=1, sleep_after=3, headless=headless)
+        await api.create_sessions(num_sessions=1, sleep_after=3)
 
         for keyword in keywords:
             cursor = initial_cursor if initial_cursor is not None else 0
@@ -171,15 +171,15 @@ async def _fetch_tiktok_videos_async(keywords: List[str], num_videos: int, *, he
     return all_videos[:num_videos], last_cursor
 
 
-def _run_async(keywords: List[str], num_videos: int, *, headless: bool, initial_cursor: Optional[int]) -> tuple[List[TikTokVideo], Optional[int]]:
+def _run_async(keywords: List[str], num_videos: int, *, initial_cursor: Optional[int]) -> tuple[List[TikTokVideo], Optional[int]]:
     try:
-        return asyncio.run(_fetch_tiktok_videos_async(keywords, num_videos, headless=headless, initial_cursor=initial_cursor))
+        return asyncio.run(_fetch_tiktok_videos_async(keywords, num_videos, initial_cursor=initial_cursor))
     except RuntimeError as exc:
         if "event loop" not in str(exc).lower():
             raise
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(
-            _fetch_tiktok_videos_async(keywords, num_videos, headless=headless, initial_cursor=initial_cursor)
+            _fetch_tiktok_videos_async(keywords, num_videos, initial_cursor=initial_cursor)
         )
     except Exception:
         # In case of any other exception during async execution, return empty list and None cursor
@@ -207,10 +207,8 @@ def get_tiktok_videos(
         logger.info("Serving TikTok results for '%s' from cache", ", ".join(keywords))
         return CrawlerResult(videos=cached_entry["videos"], from_cache=True, next_cursor=cached_entry["next_cursor"])
 
-    headless = os.getenv("TIKTOK_HEADLESS", "1") != "0"
-
     try:
-        videos, next_cursor = _run_async(keywords, num_videos, headless=headless, initial_cursor=cursor)
+        videos, next_cursor = _run_async(keywords, num_videos, initial_cursor=cursor)
         if videos:
             _CACHE[normalized_key] = {
                 "videos": videos,
