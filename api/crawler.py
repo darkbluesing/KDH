@@ -82,7 +82,7 @@ def _extract_videos(data_block: Iterable[dict[str, object]]) -> list[TikTokVideo
         author = item.get("author") or {}
         author_id = str(author.get("uniqueId") or author.get("id") or "unknown")
         video_meta = item.get("video") or {}
-        cover = video_meta.get("cover") or video_meta.get("dynamicCover")
+        cover = video_meta.get("cover") or video_meta.get("dynamicCover") or video_meta.get("originCover")
         download_url = (
             video_meta.get("downloadAddr")
             or video_meta.get("downloadAddrH265")
@@ -210,54 +210,17 @@ def get_tiktok_videos(
     headless = os.getenv("TIKTOK_HEADLESS", "1") != "0"
 
     try:
-        videos = []
-        processed_ids = set()
-        total_fetched = 0
-
-        for keyword in keywords:
-            print(f"Fetching videos for keyword: {keyword}")
-            # Using api.by_hashtag for single keyword search
-            videos_from_api = api.by_hashtag(keyword, count=num_videos)
-            
-            # Log the number of videos returned by the API for this keyword
-            print(f"TikTokApi returned {len(videos_from_api)} videos for keyword '{keyword}'.")
-
-            for video in videos_from_api:
-                if video.id in processed_ids:
-                    continue
-
-                # Log the thumbnail URL from the raw API response
-                thumbnail_url = video.video.cover if hasattr(video, 'video') and hasattr(video.video, 'cover') else 'No cover found'
-                print(f"Video ID {video.id} has thumbnail URL: {thumbnail_url}")
-
-                videos.append(
-                    Video(
-                        video_id=video.id,
-                        title=video.desc,
-                        author_id=video.author.unique_id,
-                        author_name=video.author.nickname,
-                        play_url=video.video.play_addr,
-                        download_url=video.video.download_addr,
-                        thumbnail_url=video.video.cover,
-                        stats=VideoStats(
-                            likes=video.stats["diggCount"],
-                            shares=video.stats["shareCount"],
-                            comments=video.stats["commentCount"],
-                            views=video.stats["playCount"],
-                        ),
-                    )
-                )
-                processed_ids.add(video.id)
-                if len(videos) >= num_videos:
-                    break
-            if len(videos) >= num_videos:
-                break
-
-        result = CrawlerResult(videos=videos, from_cache=False)
-
+        videos, next_cursor = _run_async(keywords, num_videos, headless=headless, initial_cursor=cursor)
+        if videos:
+            _CACHE[normalized_key] = {
+                "videos": videos,
+                "timestamp": now,
+                "next_cursor": next_cursor,
+            }
+        return CrawlerResult(videos=videos, from_cache=False, next_cursor=next_cursor)
     except Exception as e:
-        print(f"An error occurred during TikTok crawling: {e}", file=sys.stderr)
-        result = CrawlerResult(videos=[], from_cache=False, error=str(e))
+        logger.error("An error occurred during TikTok crawling: %s", e, exc_info=True)
+        return CrawlerResult(videos=[], from_cache=False, error=str(e))
 
 
 def _parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
@@ -289,7 +252,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # Determine the path to the frontend/public directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    output_path = os.path.join(script_dir, "frontend", "public", "tiktok_live.json")
+    output_path = os.path.join(os.path.dirname(script_dir), "frontend", "public", "tiktok_live.json")
 
     try:
         with open(output_path, "w", encoding="utf-8") as f:
