@@ -93,7 +93,7 @@ async function fetchTikTokFromApi(limit: number, keywords: string[], forceRefres
 
 async function fetchTikTokFromStatic(): Promise<VideoItem[]> {
   for (const path of TIKTOK_STATIC_SOURCES) {
-    const data = await safeFetchJson<StaticTikTokPayload>(path, { cache: "no-store" });
+    const data = await safeFetchJson<StaticTikTokPayload>(`${path}?cache_bust=${Date.now()}`, { cache: "no-store" });
     const videos = extractTikTokVideos(data);
     if (videos.length) {
       return videos;
