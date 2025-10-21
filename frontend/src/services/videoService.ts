@@ -83,7 +83,9 @@ async function fetchTikTokFromApi(limit: number, keywords: string[], forceRefres
     params.set("cache_bust", Date.now().toString());
   }
 
-  const data = await safeFetchJson<{ videos: VideoItem[] }>(`${TIKTOK_API_ENDPOINT}?${params.toString()}`);
+  const data = await safeFetchJson<{ videos: VideoItem[] }>(`${TIKTOK_API_ENDPOINT}?${params.toString()}`, {
+    cache: "no-store",
+  });
   if (data?.videos?.length) {
     return data.videos.filter((video) => video.source === "tiktok" && Boolean(video.id));
   }
@@ -96,11 +98,11 @@ async function fetchTikTokFromStatic(): Promise<VideoItem[]> {
     const data = await safeFetchJson<StaticTikTokPayload>(`${path}?cache_bust=${Date.now()}`, { cache: "no-store" });
     const videos = extractTikTokVideos(data);
     if (videos.length) {
-      return videos;
+      return shuffleItems(videos);
     }
   }
 
-  return TIKTOK_FALLBACK;
+  return shuffleItems(TIKTOK_FALLBACK);
 }
 
 export async function fetchVideosBySource(source: VideoSource): Promise<VideoItem[]> {

@@ -10,6 +10,15 @@ export const revalidate = 0;
 
 const STATIC_FILES = ["tiktok_live.json", "tiktok.json"] as const;
 
+function shuffleItems<T>(items: T[]): T[] {
+  const shuffled = [...items];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+  return shuffled;
+}
+
 function toLowerKeywords(raw: string | null): string[] {
   if (!raw) {
     return [];
@@ -83,7 +92,8 @@ export async function GET(request: Request) {
   const limit = Number.isFinite(limitParam) ? Math.max(1, Math.min(Math.floor(limitParam), videos.length)) : videos.length;
 
   const filtered = filterByKeywords(videos, keywords);
-  const payload = filtered.slice(0, limit);
+  const randomized = shuffleItems(filtered);
+  const payload = randomized.slice(0, limit);
 
   return NextResponse.json(
     {
@@ -95,7 +105,7 @@ export async function GET(request: Request) {
     },
     {
       headers: {
-        "Cache-Control": "public, max-age=60, s-maxage=120",
+        "Cache-Control": "no-store, max-age=0, must-revalidate",
       },
     }
   );
