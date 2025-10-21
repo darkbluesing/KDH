@@ -80,6 +80,7 @@ async function fetchTikTokFromApi(limit: number, keywords: string[], forceRefres
   }
   if (forceRefresh) {
     params.set("force_refresh", "true");
+    params.set("cache_bust", Date.now().toString());
   }
 
   const data = await safeFetchJson<{ videos: VideoItem[] }>(`${TIKTOK_API_ENDPOINT}?${params.toString()}`);
