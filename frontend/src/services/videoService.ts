@@ -73,10 +73,13 @@ export async function safeFetchJson<T>(input: RequestInfo, init?: RequestInit): 
   }
 }
 
-async function fetchTikTokFromApi(limit: number, keywords: string[]): Promise<VideoItem[]> {
+async function fetchTikTokFromApi(limit: number, keywords: string[], forceRefresh = false): Promise<VideoItem[]> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (keywords.length > 0) {
     params.set("q", keywords.join(","));
+  }
+  if (forceRefresh) {
+    params.set("force_refresh", "true");
   }
 
   const data = await safeFetchJson<{ videos: VideoItem[] }>(`${TIKTOK_API_ENDPOINT}?${params.toString()}`);
@@ -115,17 +118,17 @@ export async function fetchVideosBySource(source: VideoSource): Promise<VideoIte
   return MOCK_VIDEOS.filter((video) => video.source === source);
 }
 
-export async function fetchCombinedVideos(): Promise<VideoItem[]> {
+export async function fetchCombinedVideos(forceRefresh = false): Promise<VideoItem[]> {
   const cacheKey = "combined:default";
   const now = Date.now();
   const cached = combinedCache.get(cacheKey);
-  if (cached && cached.expiresAt > now) {
+  if (cached && cached.expiresAt > now && !forceRefresh) {
     return cached.payload;
   }
 
   let [youtubeData, tiktokVideos] = await Promise.all([
     safeFetchJson<{ videos: VideoItem[] }>(`${YOUTUBE_VIDEOS_ENDPOINT}?limit=${DEFAULT_FETCH_LIMIT}`),
-    fetchTikTokFromApi(DEFAULT_FETCH_LIMIT, DEFAULT_TIKTOK_KEYWORDS),
+    fetchTikTokFromApi(DEFAULT_FETCH_LIMIT, DEFAULT_TIKTOK_KEYWORDS, forceRefresh),
   ]);
 
   if (!tiktokVideos.length) {

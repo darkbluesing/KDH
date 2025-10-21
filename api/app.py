@@ -122,7 +122,8 @@ def _resolve_keyword(raw_keywords: Optional[str]) -> List[str]:
 def api_videos():
     keywords = _resolve_keyword(request.args.get("q"))
     limit = int(request.args.get("limit", 100))
-    result = get_tiktok_videos(keywords, num_videos=limit)
+    force_refresh = request.args.get("force_refresh", "false").lower() == "true"
+    result = get_tiktok_videos(keywords, num_videos=limit, force_refresh=force_refresh)
     return jsonify({
         "keyword": keywords,
         "total": len(result.videos),

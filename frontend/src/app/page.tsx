@@ -56,10 +56,10 @@ export default function Home() {
 
   const isMountedRef = useRef(true);
 
-  const loadVideos = useCallback(async () => {
+  const loadVideos = useCallback(async (forceRefresh = false) => {
     setIsVideosLoading(true);
 
-    const latestVideos = await fetchCombinedVideos();
+    const latestVideos = await fetchCombinedVideos(forceRefresh);
 
     if (!isMountedRef.current) {
       return;
@@ -157,7 +157,7 @@ export default function Home() {
                 <button
                   className="group relative overflow-hidden rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-kdh-metallic-silver shadow-neon transition hover:border-kdh-neon-purple hover:text-white"
                   disabled={isVideosLoading}
-                  onClick={loadVideos}
+                  onClick={() => loadVideos(true)}
                   type="button"
                 >
                   <span className="absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_top_right,rgba(162,89,255,0.45),transparent_55%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
