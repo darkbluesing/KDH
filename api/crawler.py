@@ -207,6 +207,7 @@ def get_tiktok_videos(
         logger.info("Serving TikTok results for '%s' from cache", ", ".join(keywords))
         return CrawlerResult(videos=cached_entry["videos"], from_cache=True, next_cursor=cached_entry["next_cursor"])
 
+    logger.info("Bypassing cache for TikTok results for '%s'", ", ".join(keywords))
     try:
         videos, next_cursor = _run_async(keywords, num_videos, initial_cursor=cursor)
         if videos:
