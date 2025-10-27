@@ -13,6 +13,14 @@ export interface VideoItem {
   authorId?: string;
 }
 
+export interface AdItem {
+  id: number;
+  url: string;
+  image: string;
+  title: string;
+  cta: string;
+}
+
 export interface PlatformConfig {
   name: string;
   baseUrl: string;
