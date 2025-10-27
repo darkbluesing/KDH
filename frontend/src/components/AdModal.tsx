@@ -1,13 +1,15 @@
 'use client';
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { FiX } from "react-icons/fi";
-import type { VideoItem } from "@/lib/types";
+import type { AdItem, VideoItem } from "@/lib/types";
 
 export type AdModalProps = {
   isOpen: boolean;
   payload: VideoItem | null;
+  ad: AdItem | null;
   onClose: () => void;
 };
 
@@ -21,9 +23,14 @@ const modalVariants = {
   visible: { opacity: 1, scale: 1, y: 0 },
 };
 
-export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
+export function AdModal({ isOpen, payload, ad, onClose }: AdModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    setImageSrc(ad?.image ?? null);
+  }, [ad]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -68,7 +75,7 @@ export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
 
   return (
     <AnimatePresence>
-      {isOpen && payload ? (
+      {isOpen && payload && ad ? (
         <motion.div
           animate="visible"
           aria-modal="true"
@@ -78,7 +85,7 @@ export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
           variants={backdropVariants}
         >
           <motion.div
-            aria-label="광고 상세"
+            aria-label="Advertisement Details"
             className="relative w-[min(560px,90vw)] overflow-hidden rounded-3xl border border-white/8 bg-gradient-to-br from-kdh-charcoal via-kdh-deep-black to-black p-8 text-slate-100 shadow-2xl"
             ref={dialogRef}
             role="dialog"
@@ -94,30 +101,54 @@ export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
             </button>
 
             <div className="space-y-6">
-              <div className="space-y-3">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.35em] text-kdh-metallic-silver/80">
-                  광고 안내
-                </span>
-                <h2 className="text-2xl font-semibold text-white">
-                  Demon Hunters X {payload.source === "youtube" ? "YouTube" : "TikTok"}
-                </h2>
-                <p className="text-sm leading-relaxed text-slate-300">
-                  {payload.title} 영상을 시청하기 전에 Demon Hunters 세계관 스페셜 캠페인을 만나보세요.
-                  지금 바로 가입하면 한정판 굿즈와 프리미어 상영 티켓을 선착순으로 드립니다.
-                </p>
-              </div>
+              <a
+                className="block rounded-2xl border border-white/10 bg-black/30 p-4 transition hover:border-kdh-neon-purple/60 hover:bg-black/40"
+                href={ad.url}
+                rel="sponsored noreferrer"
+                target="_blank"
+              >
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] sm:items-center">
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-white/10 bg-black/60">
+                    {imageSrc ? (
+                      <Image
+                        alt={ad.title}
+                        className="object-contain"
+                        fill
+                        loading="lazy"
+                        onError={() => setImageSrc(null)}
+                        sizes="(min-width: 640px) 320px, 50vw"
+                        src={imageSrc}
+                      />
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(162,89,255,0.4),_transparent_70%)] px-4 py-10 text-center text-sm text-slate-200/80">
+                        <span className="text-xs uppercase tracking-[0.35em] text-kdh-metallic-silver/70">
+                          Amazon Merch
+                        </span>
+                        <p className="mt-3 font-semibold text-white">{ad.title}</p>
+                        <p className="mt-2 text-[12px] text-slate-300/70">Preview unavailable. Tap to view on Amazon.</p>
+                      </div>
+                    )}
+                  </div>
 
-              <div className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 text-sm leading-relaxed text-slate-200">
-                <p>
-                  • 네온 퍼플 & 일렉트릭 블루 테마의 실물 포스터 증정
-                </p>
-                <p>
-                  • 5월 20일 서울 월드 아레나 VIP 좌석 우선 예약권
-                </p>
-                <p>
-                  • Director&apos;s Cut 비하인드 영상 스트리밍 선공개
-                </p>
-              </div>
+                  <div className="space-y-3 text-sm">
+                    <p className="text-[13px] uppercase tracking-[0.3em] text-kdh-metallic-silver/80">
+                      Amazon Picks
+                    </p>
+                    <h2 className="text-xl font-semibold text-white">
+                      {ad.title}
+                    </h2>
+                    <p className="leading-relaxed text-slate-300">
+                      Explore Demon Hunters-inspired outfits and gear directly on Amazon.
+                    </p>
+                    <div className="inline-flex items-center gap-2 rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.3em] text-white transition hover:border-kdh-neon-purple hover:bg-kdh-neon-purple/25">
+                      {ad.cta} ↗
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      * This link uses the Amazon Associates affiliate program.
+                    </p>
+                  </div>
+                </div>
+              </a>
 
               <div className="flex flex-wrap gap-3">
                 <button
@@ -125,16 +156,8 @@ export function AdModal({ isOpen, payload, onClose }: AdModalProps) {
                   onClick={onClose}
                   type="button"
                 >
-                  영상 재생하기
+                  Close Ad and Watch Video
                 </button>
-                <a
-                  className="group inline-flex items-center gap-2 rounded-full border border-kdh-neon-purple/60 bg-kdh-neon-purple/20 px-5 py-3 text-[13px] font-semibold uppercase tracking-[0.25em] text-white transition hover:border-kdh-electric-blue/60 hover:bg-kdh-electric-blue/25"
-                  href="https://www.youtube.com/results?search_query=K-POP+Demon+Hunters"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  공식 채널 방문
-                </a>
               </div>
             </div>
           </motion.div>
