@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { VideoItem, VideoSource } from "@/lib/types";
+import type { AdItem, VideoItem, VideoSource } from "@/lib/types";
 import { VideoCard } from "./VideoCard";
 
 type VideoGridProps = {
@@ -9,16 +9,10 @@ type VideoGridProps = {
   filterTabs?: Array<{ id: "all" | VideoSource; label: string }>;
   activeFilter?: "all" | VideoSource;
   onFilterChange?: (next: "all" | VideoSource) => void;
+  inlineAd?: AdItem | null;
 };
 
 const GRID_BANNER_INSERT_INDEX = 30;
-
-const GRID_BANNER_AD = {
-  href: "https://www.amazon.com/dp/B0FPW9RKXT?crid=39LMK8D21VG12&dib=eyJ2IjoiMSJ9.a99gxwyrvsdJXGI7gm88iQa98NVkE6C2huY5Y-2oMETXb-Z2vtl4Oq6Jb5iTOAfnqTUnEWMpQGw1_7f1BCB0tol9p4xFT6XZKH4bDxnKVmkvhzWUVEGMqCSMB5c3Y9o7QJaozpjilX1_ULAvbZ6s6WcZKzTbR1227hvtUyERhCkmE2V80ktILUoE0f9XS3gm6S6UaPbRLmLySaLIMAoU1d1wadCX5EmSMYt1yxvRtHYARhDZ7PxR0tmzouCZXDKeXV7AsiFMTaSiBvYhxEwvaqMy-N-910UuG9mBXw2AUzg.JiNdJVabOU8TDzDuOT-33sPGWg5wsdqTze0HQV0WpWQ&dib_tag=se&keywords=kpop+demon+hunters&qid=1761486868&sprefix=kpop+demon+hunters+%2Caps%2C292&sr=8-33&linkCode=ll2&tag=kpdhworld-20&linkId=9675cc5764927f6cedc819c61b6e69f7&language=en_US&ref_=as_li_ss_tl",
-  headline: "Huntrix Performance Set (Amazon Exclusive)",
-  subline: "Snag the studio-grade Demon Hunters stage look before it sells out.",
-  cta: "Shop The Drop",
-} as const;
 
 export function VideoGrid({
   videos,
@@ -27,6 +21,7 @@ export function VideoGrid({
   filterTabs,
   activeFilter,
   onFilterChange,
+  inlineAd,
 }: VideoGridProps) {
   const preparedGridItems = videos.map((video, index) => (
     <VideoCard
@@ -37,15 +32,15 @@ export function VideoGrid({
     />
   ));
 
-  if (videos.length >= GRID_BANNER_INSERT_INDEX) {
+  if (inlineAd && videos.length >= GRID_BANNER_INSERT_INDEX) {
     const insertPosition = Math.min(GRID_BANNER_INSERT_INDEX, preparedGridItems.length);
     preparedGridItems.splice(
       insertPosition,
       0,
       <a
         className="col-span-2 flex w-full flex-col items-center gap-2 overflow-hidden rounded-3xl border border-white/12 bg-gradient-to-r from-black/70 via-kdh-neon-purple/20 to-kdh-electric-blue/10 px-3 py-1 text-center text-white shadow-banner transition hover:border-kdh-neon-purple/50 hover:bg-kdh-neon-purple/10 sm:col-span-3 md:col-span-4 lg:col-span-6 lg:flex-row lg:items-center lg:justify-center lg:gap-4"
-        href={GRID_BANNER_AD.href}
-        key="video-grid-sponsored-banner"
+        href={inlineAd.url}
+        key={`video-grid-sponsored-banner-${inlineAd.id}`}
         rel="sponsored noopener noreferrer"
         target="_blank"
       >
@@ -55,20 +50,22 @@ export function VideoGrid({
               <span className="h-2 w-2 rounded-full bg-kdh-neon-purple/70 shadow-[0_0_12px_rgba(162,89,255,0.7)]" aria-hidden={true} />
               Sponsored
             </span>
-            <p className="text-sm font-semibold leading-tight text-white sm:text-base">{GRID_BANNER_AD.headline}</p>
-            <p className="max-w-2xl text-[10px] leading-tight sm:text-xs">{GRID_BANNER_AD.subline}</p>
+            <p className="text-sm font-semibold leading-tight text-white sm:text-base">{inlineAd.title}</p>
+            <p className="max-w-2xl text-[10px] leading-tight sm:text-xs">Tap to check current pricing and availability on Amazon.</p>
           </div>
           <span className="inline-flex min-w-[120px] items-center justify-center rounded-full bg-kdh-electric-blue/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-black transition hover:bg-kdh-electric-blue">
-            {GRID_BANNER_AD.cta}
+            {inlineAd.cta}
           </span>
-          <Image
-            alt="K-Pop Demon Hunters logo"
-            className="h-auto w-32 flex-shrink-0 drop-shadow-[0_0_16px_rgba(118,218,255,0.45)] sm:w-40 md:w-44 lg:w-48"
-            height={210}
-            loading="lazy"
-            src="/kpdh_logo.png"
-            width={340}
-          />
+          <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-black/40 sm:h-20 sm:w-20">
+            <Image
+              alt={inlineAd.title}
+              className="object-contain p-1"
+              fill
+              loading="lazy"
+              sizes="80px"
+              src={inlineAd.image}
+            />
+          </div>
         </div>
       </a>
     );

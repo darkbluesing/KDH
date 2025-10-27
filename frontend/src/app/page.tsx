@@ -7,8 +7,9 @@ import { AdModal } from "@/components/AdModal";
 import { VideoModal } from "@/components/VideoModal";
 import { SideBanner } from "@/components/SideBanner";
 import { VideoGrid } from "@/components/VideoGrid";
+import { adsList } from "@/data/adsList";
 import { MOCK_VIDEOS } from "@/lib/mockVideos";
-import type { VideoItem, VideoSource } from "@/lib/types";
+import type { AdItem, VideoItem, VideoSource } from "@/lib/types";
 import { fetchCombinedVideos } from "@/services/videoService";
 
 const FILTER_TABS: Array<{ id: "all" | VideoSource; label: string }> = [
@@ -60,6 +61,15 @@ function interleaveCollections(youtubeClips: VideoItem[], tiktokClips: VideoItem
 
 const INITIAL_ALL_VIDEOS = interleaveCollections(YOUTUBE_FALLBACK, TIKTOK_FALLBACK);
 
+const shuffleArray = <T,>(input: readonly T[]): T[] => {
+  const output = [...input];
+  for (let index = output.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [output[index], output[swapIndex]] = [output[swapIndex], output[index]];
+  }
+  return output;
+};
+
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState<"all" | VideoSource>("all");
   const [videos, setVideos] = useState<VideoItem[]>(INITIAL_ALL_VIDEOS);
@@ -69,6 +79,9 @@ export default function Home() {
   const [isAdOpen, setIsAdOpen] = useState(false);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
+  const [adQueue, setAdQueue] = useState<AdItem[]>([]);
+  const [activeAd, setActiveAd] = useState<AdItem | null>(null);
+  const [inlineBannerAd, setInlineBannerAd] = useState<AdItem | null>(null);
 
   const isMountedRef = useRef(true);
 
@@ -111,6 +124,43 @@ export default function Home() {
     };
   }, [loadVideos]);
 
+  useEffect(() => {
+    const seeded = shuffleArray(adsList);
+    setAdQueue(seeded);
+    setInlineBannerAd(seeded[0] ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cycleAd = useCallback(() => {
+    setAdQueue((currentQueue) => {
+      let queue = currentQueue;
+      if (!queue.length) {
+        queue = shuffleArray(adsList);
+      }
+
+      if (!queue.length) {
+        setActiveAd(null);
+        setInlineBannerAd(null);
+        return queue;
+      }
+
+      const [nextAd, ...remaining] = queue;
+      setActiveAd(nextAd);
+
+      if (remaining.length) {
+        setInlineBannerAd(remaining[0] ?? null);
+        return remaining;
+      }
+
+      const reshuffled = shuffleArray(adsList);
+      setInlineBannerAd(reshuffled[0] ?? null);
+      if (reshuffled.length > 1 && reshuffled[0].id === nextAd.id) {
+        [reshuffled[0], reshuffled[1]] = [reshuffled[1], reshuffled[0]];
+      }
+      return reshuffled;
+    });
+  }, []);
+
   const filteredVideos = useMemo(() => {
     if (activeFilter === "all") {
       return videos;
@@ -125,9 +175,10 @@ export default function Home() {
 
   const handleVideoSelect = useCallback((video: VideoItem) => {
     setSelectedVideo(video);
+    cycleAd();
     setIsVideoOpen(false);
     setIsAdOpen(true);
-  }, []);
+  }, [cycleAd]);
 
   const handleAdClose = useCallback(() => {
     setIsAdOpen(false);
@@ -296,6 +347,7 @@ export default function Home() {
 
                 <VideoGrid
                   activeFilter={activeFilter}
+                  inlineAd={inlineBannerAd}
                   filterTabs={FILTER_TABS}
                   onFilterChange={setActiveFilter}
                   onSelect={handleVideoSelect}
@@ -309,7 +361,7 @@ export default function Home() {
           </main>
         </div>
 
-        <AdModal isOpen={isAdOpen} onClose={handleAdClose} payload={selectedVideo} />
+        <AdModal ad={activeAd} isOpen={isAdOpen} onClose={handleAdClose} payload={selectedVideo} />
         <VideoModal isOpen={isVideoOpen} onClose={handleVideoClose} payload={isVideoOpen ? selectedVideo : null} />
       </div>
     </>
