@@ -68,6 +68,44 @@ def _normalise_keywords(keywords: Optional[List[str]]) -> List[str]:
     return [k.strip() for k in keywords if k.strip()]
 
 
+def _normalise_thumbnail(candidate: object) -> Optional[str]:
+    """Extract the first usable thumbnail URL from TikTok's nested payload."""
+
+    def _pick_from_mapping(mapping: dict) -> Optional[str]:
+        values_to_try = [
+            mapping.get("url"),
+            mapping.get("thumbUrl"),
+            mapping.get("thumb_url"),
+            mapping.get("cover"),
+            mapping.get("origin"),
+            mapping.get("uri"),
+            mapping.get("urlList"),
+            mapping.get("url_list"),
+            mapping.get("urls"),
+        ]
+        for value in values_to_try:
+            normalised = _normalise_thumbnail(value)
+            if normalised:
+                return normalised
+        return None
+
+    if isinstance(candidate, str):
+        candidate = candidate.strip()
+        return candidate or None
+
+    if isinstance(candidate, dict):
+        return _pick_from_mapping(candidate)
+
+    if isinstance(candidate, (list, tuple, set)):
+        for item in candidate:
+            normalised = _normalise_thumbnail(item)
+            if normalised:
+                return normalised
+        return None
+
+    return None
+
+
 def _extract_videos(data_block: Iterable[dict[str, object]]) -> list[TikTokVideo]:
     videos: list[TikTokVideo] = []
     for entry in data_block:
@@ -82,7 +120,9 @@ def _extract_videos(data_block: Iterable[dict[str, object]]) -> list[TikTokVideo
         author = item.get("author") or {}
         author_id = str(author.get("uniqueId") or author.get("id") or "unknown")
         video_meta = item.get("video") or {}
-        cover = video_meta.get("originCover") or video_meta.get("cover") or video_meta.get("dynamicCover")
+        cover = _normalise_thumbnail(
+            video_meta.get("originCover") or video_meta.get("cover") or video_meta.get("dynamicCover")
+        )
         download_url = (
             video_meta.get("downloadAddr")
             or video_meta.get("downloadAddrH265")
@@ -216,7 +256,10 @@ def get_tiktok_videos(
                 "timestamp": now,
                 "next_cursor": next_cursor,
             }
-        return CrawlerResult(videos=videos, from_cache=False, next_cursor=next_cursor)
+            return CrawlerResult(videos=videos, from_cache=False, next_cursor=next_cursor)
+
+        error_message = f"no video results for keywords: {', '.join(keywords)}"
+        return CrawlerResult(videos=[], from_cache=False, next_cursor=next_cursor, error=error_message)
     except Exception as e:
         logger.error("An error occurred during TikTok crawling: %s", e, exc_info=True)
         return CrawlerResult(videos=[], from_cache=False, error=str(e))

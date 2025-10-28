@@ -51,6 +51,23 @@ class TestCrawler(unittest.TestCase):
             },
             {
                 "type": 1,
+                "item": {
+                    "id": "7000000000000000005",
+                    "desc": "Test Video 5",
+                    "author": {"uniqueId": "testuser5"},
+                    "video": {
+                        "originCover": {
+                            "urlList": [
+                                "http://example.com/cover5-primary.jpg",
+                                "http://example.com/cover5-secondary.jpg",
+                            ]
+                        },
+                        "downloadAddr": "http://example.com/video5.mp4",
+                    },
+                },
+            },
+            {
+                "type": 1,
                 "item": { # Missing video ID
                     "desc": "Invalid Video",
                     "author": {"uniqueId": "invaliduser"},
@@ -59,7 +76,7 @@ class TestCrawler(unittest.TestCase):
             },
         ]
         videos = _extract_videos(data_block)
-        self.assertEqual(len(videos), 2)
+        self.assertEqual(len(videos), 3)
         self.assertEqual(videos[0].video_id, "7000000000000000001")
         self.assertEqual(videos[0].title, "Test Video 1")
         self.assertEqual(videos[0].author_id, "testuser1")
@@ -73,6 +90,10 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(videos[1].thumbnail_url, "http://example.com/cover2.jpg")
         self.assertIsNone(videos[1].download_url)
         self.assertEqual(videos[1].play_url, "http://example.com/play2.mp4")
+
+        self.assertEqual(videos[2].video_id, "7000000000000000005")
+        self.assertEqual(videos[2].author_id, "testuser5")
+        self.assertEqual(videos[2].thumbnail_url, "http://example.com/cover5-primary.jpg")
 
     @patch('crawler._run_async')
     def test_get_tiktok_videos_success(self, mock_run_async):
