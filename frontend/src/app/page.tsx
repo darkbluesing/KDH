@@ -25,7 +25,12 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kpdh.world";
 
 const FALLBACK_UPLOAD_DATE = "2024-01-01";
 
-const DEFAULT_INLINE_BANNER_AD: AdItem | null = adsList[0] ?? null;
+const INLINE_BANNER_FEATURED_ID = 100;
+
+const findAdById = (id: number): AdItem | null => adsList.find((ad) => ad.id === id) ?? null;
+
+const DEFAULT_INLINE_BANNER_AD: AdItem | null =
+  findAdById(INLINE_BANNER_FEATURED_ID) ?? adsList[0] ?? null;
 
 const resolveInlineBannerOverride = (): AdItem | null => {
   const override = process.env.NEXT_PUBLIC_INLINE_BANNER_AD_ID;
@@ -38,7 +43,7 @@ const resolveInlineBannerOverride = (): AdItem | null => {
     return null;
   }
 
-  return adsList.find((ad) => ad.id === parsedId) ?? null;
+  return findAdById(parsedId);
 };
 
 const buildAdQueuePool = (inlineAd: AdItem | null): AdItem[] => {
