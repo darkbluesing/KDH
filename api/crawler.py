@@ -82,7 +82,7 @@ def _extract_videos(data_block: Iterable[dict[str, object]]) -> list[TikTokVideo
         author = item.get("author") or {}
         author_id = str(author.get("uniqueId") or author.get("id") or "unknown")
         video_meta = item.get("video") or {}
-        cover = video_meta.get("cover") or video_meta.get("dynamicCover") or video_meta.get("originCover")
+        cover = video_meta.get("originCover") or video_meta.get("cover") or video_meta.get("dynamicCover")
         download_url = (
             video_meta.get("downloadAddr")
             or video_meta.get("downloadAddrH265")
