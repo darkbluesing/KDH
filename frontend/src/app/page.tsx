@@ -25,6 +25,30 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://kpdh.world";
 
 const FALLBACK_UPLOAD_DATE = "2024-01-01";
 
+const DEFAULT_INLINE_BANNER_AD: AdItem | null = adsList[0] ?? null;
+
+const resolveInlineBannerOverride = (): AdItem | null => {
+  const override = process.env.NEXT_PUBLIC_INLINE_BANNER_AD_ID;
+  if (!override) {
+    return null;
+  }
+
+  const parsedId = Number.parseInt(override, 10);
+  if (Number.isNaN(parsedId)) {
+    return null;
+  }
+
+  return adsList.find((ad) => ad.id === parsedId) ?? null;
+};
+
+const buildAdQueuePool = (inlineAd: AdItem | null): AdItem[] => {
+  if (!inlineAd) {
+    return adsList;
+  }
+
+  return adsList.filter((ad) => ad.id !== inlineAd.id);
+};
+
 const normaliseUploadDate = (date?: string): string => {
   if (!date) {
     return FALLBACK_UPLOAD_DATE;
@@ -81,7 +105,16 @@ export default function Home() {
   const [selectedVideo, setSelectedVideo] = useState<VideoItem | null>(null);
   const [adQueue, setAdQueue] = useState<AdItem[]>([]);
   const [activeAd, setActiveAd] = useState<AdItem | null>(null);
-  const [inlineBannerAd, setInlineBannerAd] = useState<AdItem | null>(null);
+  const inlineBannerOverride = useMemo(resolveInlineBannerOverride, []);
+  const fallbackInlineBanner = useMemo(
+    () => inlineBannerOverride ?? DEFAULT_INLINE_BANNER_AD,
+    [inlineBannerOverride]
+  );
+  const inlineBannerQueuePool = useMemo(
+    () => buildAdQueuePool(fallbackInlineBanner),
+    [fallbackInlineBanner]
+  );
+  const [inlineBannerAd, setInlineBannerAd] = useState<AdItem | null>(() => fallbackInlineBanner);
 
   const isMountedRef = useRef(true);
 
@@ -125,41 +158,55 @@ export default function Home() {
   }, [loadVideos]);
 
   useEffect(() => {
-    const seeded = shuffleArray(adsList);
+    const seeded = shuffleArray(inlineBannerQueuePool);
     setAdQueue(seeded);
+
+    if (fallbackInlineBanner) {
+      setInlineBannerAd(fallbackInlineBanner);
+      return;
+    }
+
     setInlineBannerAd(seeded[0] ?? null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fallbackInlineBanner, inlineBannerQueuePool]);
 
   const cycleAd = useCallback(() => {
     setAdQueue((currentQueue) => {
       let queue = currentQueue;
+
       if (!queue.length) {
-        queue = shuffleArray(adsList);
+        queue = shuffleArray(inlineBannerQueuePool);
       }
 
       if (!queue.length) {
         setActiveAd(null);
-        setInlineBannerAd(null);
+        if (!fallbackInlineBanner) {
+          setInlineBannerAd(null);
+        }
         return queue;
       }
 
       const [nextAd, ...remaining] = queue;
       setActiveAd(nextAd);
 
+      if (fallbackInlineBanner) {
+        return remaining;
+      }
+
       if (remaining.length) {
         setInlineBannerAd(remaining[0] ?? null);
         return remaining;
       }
 
-      const reshuffled = shuffleArray(adsList);
-      setInlineBannerAd(reshuffled[0] ?? null);
+      const reshuffled = shuffleArray(inlineBannerQueuePool);
+
       if (reshuffled.length > 1 && reshuffled[0].id === nextAd.id) {
         [reshuffled[0], reshuffled[1]] = [reshuffled[1], reshuffled[0]];
       }
+
+      setInlineBannerAd(reshuffled[0] ?? null);
       return reshuffled;
     });
-  }, []);
+  }, [fallbackInlineBanner, inlineBannerQueuePool]);
 
   const filteredVideos = useMemo(() => {
     if (activeFilter === "all") {
