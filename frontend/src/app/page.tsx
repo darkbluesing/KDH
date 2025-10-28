@@ -10,6 +10,7 @@ import { VideoGrid } from "@/components/VideoGrid";
 import { adsList } from "@/data/adsList";
 import { MOCK_VIDEOS } from "@/lib/mockVideos";
 import type { AdItem, VideoItem, VideoSource } from "@/lib/types";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { fetchCombinedVideos } from "@/services/videoService";
 
 const FILTER_TABS: Array<{ id: "all" | VideoSource; label: string }> = [
@@ -225,6 +226,15 @@ export default function Home() {
     return tiktokVideos.length ? tiktokVideos : TIKTOK_FALLBACK;
   }, [activeFilter, videos, youtubeVideos, tiktokVideos]);
 
+  const [displayLimit, setDisplayLimit] = useState(20);
+  const isMobile = useMediaQuery('(max-width: 768px)');
+
+  const handleLoadMore = () => {
+    setDisplayLimit((prevLimit) => prevLimit + 20);
+  };
+
+  const displayedVideos = isMobile ? filteredVideos.slice(0, displayLimit) : filteredVideos;
+
   const handleVideoSelect = useCallback((video: VideoItem) => {
     setSelectedVideo(video);
     cycleAd();
@@ -404,8 +414,21 @@ export default function Home() {
                   onFilterChange={setActiveFilter}
                   onSelect={handleVideoSelect}
                   sectionId="grid"
-                  videos={filteredVideos}
+                  videos={displayedVideos}
                 />
+
+                {isMobile && displayLimit < filteredVideos.length ? (
+                  <div className="flex justify-center">
+                    <button
+                      className="group relative overflow-hidden rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-kdh-metallic-silver shadow-neon transition hover:border-kdh-neon-purple hover:text-white"
+                      onClick={handleLoadMore}
+                      type="button"
+                    >
+                      <span className="absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_top_right,rgba(162,89,255,0.45),transparent_55%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      Load More
+                    </button>
+                  </div>
+                ) : null}
               </section>
 
               <SideBanner position="right" />

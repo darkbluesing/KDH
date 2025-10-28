@@ -32,6 +32,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "m.media-amazon.com",
       },
+      {
+        protocol: "https",
+        hostname: "ws-na.amazon-adsystem.com",
+      },
     ],
   },
 };

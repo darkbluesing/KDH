@@ -24,7 +24,7 @@ const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
         height: String(height),
         playerVars: {
           autoplay: autoplay ? 1 : 0,
-          playsinline: 1,
+          playsinline: 0,
           controls: 1,
           rel: 0,
         },

@@ -1,6 +1,10 @@
 import type { VideoItem, VideoSource } from "@/lib/types";
 import { MOCK_VIDEOS } from "@/lib/mockVideos";
-import { extractTikTokVideos, type StaticTikTokPayload } from "@/lib/tiktokStatic";
+import {
+  extractTikTokVideos,
+  type StaticTikTokPayload,
+  type TikTokLiveEntry,
+} from "@/lib/tiktokStatic";
 
 const YOUTUBE_VIDEOS_ENDPOINT = "/api/youtube/videos";
 const TIKTOK_API_ENDPOINT = "/api/videos";
@@ -73,6 +77,122 @@ export async function safeFetchJson<T>(input: RequestInfo, init?: RequestInit): 
   }
 }
 
+// Normalise nullable string fields coming from the Flask API payload.
+const trimToString = (input?: string | null) => (typeof input === "string" ? input.trim() : "");
+
+const coalesceString = (
+  ...values: Array<string | null | undefined>
+): string | undefined => {
+  for (const value of values) {
+    const trimmed = trimToString(value);
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+  return undefined;
+};
+
+type TikTokApiVideo = {
+  id?: string | number;
+  video_id?: string | number;
+  videoId?: string | number;
+  video_url?: string;
+  videoUrl?: string;
+  permalink?: string;
+  permalinkUrl?: string;
+  author_id?: string;
+  authorId?: string;
+  author?: string;
+  thumbnail_url?: string;
+  title?: string;
+  caption?: string;
+  play_url?: string;
+  playUrl?: string;
+  download_url?: string;
+  downloadUrl?: string;
+  media_url?: string;
+  mediaUrl?: string;
+  description?: string;
+  thumbnailUrl?: string;
+  cover?: string;
+  dynamicCover?: string;
+  originCover?: string;
+};
+
+type TikTokApiResponse = {
+  videos?: TikTokApiVideo[];
+};
+
+// Convert the Flask TikTok API response into our shared VideoItem structure.
+function normaliseTikTokApiVideos(rawVideos: TikTokApiVideo[] | undefined): VideoItem[] {
+  if (!rawVideos?.length) {
+    return [];
+  }
+
+  const entries: TikTokLiveEntry[] = rawVideos
+    .map((video) => {
+      const idCandidates: Array<string | undefined> = [];
+      if (typeof video.video_id === "number") {
+        idCandidates.push(String(video.video_id));
+      } else {
+        idCandidates.push(video.video_id);
+      }
+      if (typeof video.videoId === "number") {
+        idCandidates.push(String(video.videoId));
+      } else {
+        idCandidates.push(video.videoId);
+      }
+      if (typeof video.id === "number") {
+        idCandidates.push(String(video.id));
+      } else {
+        idCandidates.push(video.id);
+      }
+
+      const rawId = coalesceString(...idCandidates);
+
+      const permalink = coalesceString(
+        video.permalink,
+        video.permalinkUrl,
+        video.video_url,
+        video.videoUrl
+      );
+
+      if (!rawId && !permalink) {
+        return null;
+      }
+
+      const thumbnail = coalesceString(
+        video.thumbnail_url,
+        video.thumbnailUrl,
+        video.cover,
+        video.dynamicCover,
+        video.originCover
+      );
+
+      const playUrl = coalesceString(video.play_url, video.playUrl);
+      const downloadUrl = coalesceString(video.download_url, video.downloadUrl);
+      const mediaUrl = coalesceString(video.mediaUrl, video.media_url, playUrl, downloadUrl, permalink);
+
+      const entry: TikTokLiveEntry = {
+        video_id: rawId,
+        video_url: coalesceString(video.video_url, video.videoUrl, permalink),
+        permalink: permalink ?? undefined,
+        author_id: coalesceString(video.authorId, video.author_id, video.author),
+        thumbnail_url: thumbnail,
+        title: coalesceString(video.title, video.caption, video.description),
+        caption: coalesceString(video.caption, video.description, video.title),
+        play_url: playUrl,
+        download_url: downloadUrl,
+        media_url: mediaUrl,
+      };
+
+      return entry;
+    })
+    .filter((entry): entry is TikTokLiveEntry => Boolean(entry));
+
+  return extractTikTokVideos({ videos: entries });
+}
+
 async function fetchTikTokFromApi(limit: number, keywords: string[], forceRefresh = false): Promise<VideoItem[]> {
   const params = new URLSearchParams({ limit: String(limit) });
   if (keywords.length > 0) {
@@ -83,11 +203,14 @@ async function fetchTikTokFromApi(limit: number, keywords: string[], forceRefres
     params.set("cache_bust", Date.now().toString());
   }
 
-  const data = await safeFetchJson<{ videos: VideoItem[] }>(`${TIKTOK_API_ENDPOINT}?${params.toString()}`, {
+  const data = await safeFetchJson<TikTokApiResponse>(`${TIKTOK_API_ENDPOINT}?${params.toString()}`, {
     cache: "no-store",
   });
   if (data?.videos?.length) {
-    return data.videos.filter((video) => video.source === "tiktok" && Boolean(video.id));
+    const videos = normaliseTikTokApiVideos(data.videos);
+    if (videos.length) {
+      return videos;
+    }
   }
 
   return fetchTikTokFromStatic();

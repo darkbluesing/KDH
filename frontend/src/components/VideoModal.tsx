@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef } from "react";
 import { FiX } from "react-icons/fi";
 import type { VideoItem } from "@/lib/types";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const DynamicYouTubeEmbed = dynamic(() => import("@/components/YouTubeEmbed"), {
   ssr: false,
@@ -35,6 +36,9 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const tiktokVideoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const tiktokEmbedSrc = useMemo(() => {
     if (!payload || payload.source !== "tiktok" || !payload.id) {
       return null;
@@ -101,6 +105,20 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
     }
   }, [isOpen, payload]);
 
+  useEffect(() => {
+    if (isOpen && isMobile) {
+      if (payload?.source === 'tiktok' && tiktokEmbedSrc && iframeRef.current) {
+        iframeRef.current.requestFullscreen().catch(err => {
+          console.error("Error attempting to enable fullscreen for iframe:", err);
+        });
+      } else if (payload?.source === 'tiktok' && payload.mediaUrl && tiktokVideoRef.current) {
+        tiktokVideoRef.current.requestFullscreen().catch(err => {
+          console.error("Error attempting to enable fullscreen for video:", err);
+        });
+      }
+    }
+  }, [isOpen, isMobile, payload, tiktokEmbedSrc]);
+
   if (!payload) {
     return null;
   }
@@ -140,6 +158,7 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
                   <DynamicYouTubeEmbed videoId={payload.id} />
                 ) : payload.source === "tiktok" && tiktokEmbedSrc ? (
                   <iframe
+                    ref={iframeRef}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     className="h-full w-full"
@@ -155,7 +174,7 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
                     className="h-full w-full object-cover"
                     controls
                     key={payload.id}
-                    playsInline
+                    playsInline={!isMobile}
                     preload="auto"
                     ref={tiktokVideoRef}
                     src={payload.mediaUrl}

@@ -38,7 +38,7 @@ export function VideoGrid({
       insertPosition,
       0,
       <a
-        className="col-span-2 flex w-full flex-col items-center gap-2 overflow-hidden rounded-3xl border border-white/12 bg-gradient-to-r from-black/70 via-kdh-neon-purple/20 to-kdh-electric-blue/10 px-3 py-1 text-center text-white shadow-banner transition hover:border-kdh-neon-purple/50 hover:bg-kdh-neon-purple/10 sm:col-span-3 md:col-span-4 lg:col-span-6 lg:flex-row lg:items-center lg:justify-center lg:gap-4"
+        className="col-span-2 flex w-full flex-col items-center gap-2 rounded-3xl border border-white/12 bg-gradient-to-r from-black/70 via-kdh-neon-purple/20 to-kdh-electric-blue/10 px-3 py-1 text-center text-white shadow-banner transition hover:border-kdh-neon-purple/50 hover:bg-kdh-neon-purple/10 sm:col-span-3 md:col-span-4 lg:col-span-6 lg:flex-row lg:items-center lg:justify-center lg:gap-4"
         href={inlineAd.url}
         key={`video-grid-sponsored-banner-${inlineAd.id}`}
         rel="sponsored noopener noreferrer"
@@ -47,7 +47,7 @@ export function VideoGrid({
         <div className="flex flex-col items-center gap-2 text-center text-[11px] text-white/90 sm:flex-row sm:items-center sm:justify-center sm:gap-4">
           <div className="flex flex-col items-center gap-[1px] text-center">
             <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.35em] text-kdh-metallic-silver/70">
-              <span className="h-2 w-2 rounded-full bg-kdh-neon-purple/70 shadow-[0_0_12px_rgba(162,89,255,0.7)]" aria-hidden={true} />
+              <span className="h-2 w-2 rounded-full bg-kdh-neon-purple/70 shadow-[0_0_12px_rgba(162,89,255,0.7)]" aria-hidden="true" />
               Sponsored
             </span>
             <p className="text-sm font-semibold leading-tight text-white sm:text-base">{inlineAd.title}</p>
@@ -56,7 +56,7 @@ export function VideoGrid({
           <span className="inline-flex min-w-[120px] items-center justify-center rounded-full bg-kdh-electric-blue/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.35em] text-black transition hover:bg-kdh-electric-blue">
             {inlineAd.cta}
           </span>
-          <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-white/15 bg-black/40 sm:h-20 sm:w-20">
+          <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden border border-white/15 bg-black/40 sm:h-20 sm:w-20">
             <Image
               alt={inlineAd.title}
               className="object-contain p-1"

@@ -25,7 +25,7 @@ const LEFT_BANNER: BannerContent = {
 };
 
 const RIGHT_BANNER = (() => {
-  const fallback = adsList[0];
+  const fallback = adsList[1];
   if (!fallback) {
     return null;
   }
