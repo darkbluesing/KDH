@@ -11,6 +11,7 @@ type VideoCardProps = {
 export function VideoCard({ index, onSelect, video }: VideoCardProps) {
   const { title, source, viewCount, channelName, thumbnailUrl } = video;
   const altText = `${title} 썸네일`;
+  const isTikTok = source === "tiktok";
 
   return (
     <article
@@ -36,6 +37,7 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
             sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 18vw, (min-width: 768px) 28vw, 42vw"
             src={thumbnailUrl}
             fill
+            unoptimized={isTikTok}
           />
         ) : (
           <div aria-hidden="true" className="size-full bg-neutral-900" />
