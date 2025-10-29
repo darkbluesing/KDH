@@ -12,23 +12,7 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
   const { title, source, viewCount, channelName, thumbnailUrl } = video;
   const altText = `${title} 썸네일`;
   const isTikTok = source === "tiktok";
-  const resolvedThumbnailUrl = (() => {
-    if (!thumbnailUrl) {
-      return undefined;
-    }
-    if (thumbnailUrl.startsWith("/api/tiktok-thumbnail")) {
-      return thumbnailUrl;
-    }
-    if (!isTikTok) {
-      return thumbnailUrl;
-    }
-    try {
-      return `/api/tiktok-thumbnail?src=${encodeURIComponent(thumbnailUrl)}`;
-    } catch (error) {
-      console.warn("VideoCard: failed to encode TikTok thumbnail", { thumbnailUrl, error });
-      return thumbnailUrl;
-    }
-  })();
+  const resolvedThumbnailUrl = thumbnailUrl;
 
   return (
     <article

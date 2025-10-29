@@ -94,15 +94,27 @@ def get_youtube_videos(query: str, limit: int = 100) -> list[YouTubeVideo]:
 def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
     videos = []
     for video in result.videos:
-        video_dict = asdict(video)
-        # The frontend expects a `mediaUrl` field for direct video playback.
-        video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
-        video_dict["authorId"] = video.author_id
-        proxied_thumbnail = _validate_tiktok_thumbnail(video.thumbnail_url)
-        if proxied_thumbnail:
-            proxied_path = f"/proxy/tiktok-thumbnail?src={requests.utils.requote_uri(proxied_thumbnail)}"
-            video_dict["thumbnail_url"] = proxied_path
-        videos.append(video_dict)
+    video_dict = asdict(video)
+    # The frontend expects a `mediaUrl` field for direct video playback.
+    video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
+    video_dict["authorId"] = video.author_id
+
+    permalink = video.video_url or video_dict.get("video_url") or video_dict.get("permalink")
+    proxied_thumbnail = None
+    if permalink:
+        try:
+            proxied_thumbnail = f"/proxy/tiktok-thumbnail?permalink={requests.utils.requote_uri(permalink)}"
+        except Exception:  # noqa: BLE001
+            proxied_thumbnail = None
+
+    if not proxied_thumbnail:
+        validated_thumbnail = _validate_tiktok_thumbnail(video.thumbnail_url)
+        if validated_thumbnail:
+            proxied_thumbnail = f"/proxy/tiktok-thumbnail?src={requests.utils.requote_uri(validated_thumbnail)}"
+
+    if proxied_thumbnail:
+        video_dict["thumbnail_url"] = proxied_thumbnail
+    videos.append(video_dict)
     return videos
 
 
@@ -186,9 +198,54 @@ def api_youtube_videos():
     return jsonify(payload), 200
 
 
+def _normalise_permalink(raw: Optional[str]) -> Optional[str]:
+    if not raw:
+        return None
+    try:
+        parsed = urlparse(raw)
+    except ValueError:
+        return None
+    if parsed.scheme != "https":
+        return None
+    if parsed.hostname not in {"www.tiktok.com", "tiktok.com"}:
+        return None
+    if "/video/" not in parsed.path:
+        return None
+    return parsed.geturl()
+
+
+def _fetch_oembed_thumbnail(permalink: str) -> Optional[str]:
+    try:
+        response = requests.get(
+            "https://www.tiktok.com/oembed",
+            params={"url": permalink},
+            headers={"User-Agent": "Mozilla/5.0"},
+            timeout=10,
+        )
+        if response.ok:
+            data = response.json()
+            thumbnail = data.get("thumbnail_url")
+            return thumbnail if _validate_tiktok_thumbnail(thumbnail) else None
+        app.logger.info(
+            "TikTok oEmbed request failed",
+            extra={"permalink": permalink, "status_code": response.status_code},
+        )
+    except requests.RequestException as exc:  # noqa: BLE001
+        app.logger.warning(
+            "Error calling TikTok oEmbed",
+            extra={"permalink": permalink, "error": str(exc)},
+        )
+    return None
+
+
 @app.route("/proxy/tiktok-thumbnail")
 def proxy_tiktok_thumbnail():
+    permalink = _normalise_permalink(request.args.get("permalink"))
     source = _validate_tiktok_thumbnail(request.args.get("src"))
+
+    if not source and permalink:
+        source = _fetch_oembed_thumbnail(permalink)
+
     if not source:
         return jsonify({"error": "Invalid TikTok thumbnail URL"}), 400
 
