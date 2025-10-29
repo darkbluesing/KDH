@@ -2,3 +2,4 @@ Flask>=2.0
 TikTokApi>=5.0
 google-api-python-client
 Flask-Cors
+requests>=2.31

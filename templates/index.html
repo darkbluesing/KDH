@@ -54,7 +54,7 @@
                 {% if video.thumbnail_url %}
                   <img
                     class="thumbnail"
-                    src="{{ video.thumbnail_url }}"
+                    src="{{ url_for('proxy_tiktok_thumbnail') }}?src={{ video.thumbnail_url | urlencode }}"
                     alt="TikTok preview by @{{ video.author_id }}"
                     loading="lazy"
                   />

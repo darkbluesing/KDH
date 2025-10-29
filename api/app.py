@@ -6,7 +6,11 @@ import sys
 from dataclasses import asdict, dataclass
 from typing import List, Optional
 
-from flask import Flask, jsonify, render_template, request
+import re
+from urllib.parse import urlparse
+
+import requests
+from flask import Flask, Response, jsonify, render_template, request
 from flask_cors import CORS
 
 from crawler import DEFAULT_KEYWORD, CrawlerResult, get_tiktok_videos
@@ -16,6 +20,22 @@ from googleapiclient.errors import HttpError
 
 app = Flask(__name__)
 CORS(app)
+
+_ALLOWED_TIKTOK_HOSTS = re.compile(r"^(?:[a-z0-9-]+\.)*(?:tiktokcdn\.com|tiktokcdn-us\.com|tiktokcdn-eu\.com)$", re.IGNORECASE)
+
+
+def _validate_tiktok_thumbnail(src: Optional[str]) -> Optional[str]:
+    if not src:
+        return None
+    try:
+        parsed = urlparse(src)
+    except ValueError:
+        return None
+    if parsed.scheme != "https":
+        return None
+    if not _ALLOWED_TIKTOK_HOSTS.match(parsed.hostname or ""):
+        return None
+    return parsed.geturl()
 
 @dataclass(slots=True)
 class YouTubeVideo:
@@ -160,6 +180,38 @@ def api_youtube_videos():
         "videos": serialized_videos,
     }
     return jsonify(payload), 200
+
+
+@app.route("/proxy/tiktok-thumbnail")
+def proxy_tiktok_thumbnail():
+    source = _validate_tiktok_thumbnail(request.args.get("src"))
+    if not source:
+        return jsonify({"error": "Invalid TikTok thumbnail URL"}), 400
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        "Referer": "https://www.tiktok.com/",
+    }
+
+    try:
+        upstream = requests.get(source, headers=headers, timeout=10)
+    except requests.RequestException as exc:  # noqa: BLE001
+        app.logger.warning("Failed to fetch TikTok thumbnail", extra={"src": source, "error": str(exc)})
+        return jsonify({"error": "Unable to reach TikTok CDN"}), 502
+
+    if not upstream.ok:
+        app.logger.info(
+            "TikTok CDN rejected thumbnail request",
+            extra={"src": source, "status_code": upstream.status_code},
+        )
+        return jsonify({"error": "TikTok CDN rejected request"}), upstream.status_code
+
+    response = Response(upstream.content, status=200)
+    response.headers["Content-Type"] = upstream.headers.get("Content-Type", "image/jpeg")
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    if upstream.headers.get("ETag"):
+        response.headers["ETag"] = upstream.headers["ETag"]
+    return response
 
 
 if __name__ == "__main__":
