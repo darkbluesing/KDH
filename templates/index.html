@@ -52,9 +52,10 @@
             <article class="reel-card">
               <figure class="player">
                 {% if video.thumbnail_url %}
+                  {% set thumb = video.thumbnail_url %}
                   <img
                     class="thumbnail"
-                    src="{{ url_for('proxy_tiktok_thumbnail') }}?src={{ video.thumbnail_url | urlencode }}"
+                    src="{% if thumb.startswith('/proxy/tiktok-thumbnail') %}{{ thumb }}{% else %}{{ url_for('proxy_tiktok_thumbnail') }}?src={{ thumb | urlencode }}{% endif %}"
                     alt="TikTok preview by @{{ video.author_id }}"
                     loading="lazy"
                   />

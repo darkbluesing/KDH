@@ -98,6 +98,10 @@ def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
         # The frontend expects a `mediaUrl` field for direct video playback.
         video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
         video_dict["authorId"] = video.author_id
+        proxied_thumbnail = _validate_tiktok_thumbnail(video.thumbnail_url)
+        if proxied_thumbnail:
+            proxied_path = f"/proxy/tiktok-thumbnail?src={requests.utils.requote_uri(proxied_thumbnail)}"
+            video_dict["thumbnail_url"] = proxied_path
         videos.append(video_dict)
     return videos
 

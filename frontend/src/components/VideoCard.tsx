@@ -16,6 +16,9 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
     if (!thumbnailUrl) {
       return undefined;
     }
+    if (thumbnailUrl.startsWith("/api/tiktok-thumbnail")) {
+      return thumbnailUrl;
+    }
     if (!isTikTok) {
       return thumbnailUrl;
     }

@@ -1,6 +1,19 @@
 import type { VideoItem } from "./types";
 
 const DEFAULT_AUTHOR_HANDLE = "kpopdemonhunters";
+const TIKTOK_THUMBNAIL_PROXY = "/api/tiktok-thumbnail";
+
+function proxyTikTokThumbnail(url?: string | null): string | undefined {
+  if (!url) {
+    return undefined;
+  }
+  try {
+    return `${TIKTOK_THUMBNAIL_PROXY}?src=${encodeURIComponent(url)}`;
+  } catch (error) {
+    console.warn("tiktokStatic: failed to encode TikTok thumbnail", { url, error });
+    return url ?? undefined;
+  }
+}
 
 export type TikTokLiveEntry = {
   video_id?: string | number;
@@ -76,7 +89,7 @@ function mapLiveEntry(entry: TikTokLiveEntry): VideoItem | null {
     source: "tiktok",
     channelName: finalAuthorId ? `@${finalAuthorId}` : `@${DEFAULT_AUTHOR_HANDLE}`,
     authorId: finalAuthorId ?? DEFAULT_AUTHOR_HANDLE,
-    thumbnailUrl: entry.thumbnail_url ?? undefined,
+    thumbnailUrl: proxyTikTokThumbnail(entry.thumbnail_url),
     permalink: permalink ?? undefined,
     mediaUrl: mediaUrl ?? permalink ?? undefined,
   } satisfies VideoItem;
@@ -100,7 +113,7 @@ function mapLegacyEntry(entry: TikTokLegacyEntry): VideoItem | null {
     source: "tiktok",
     channelName: `@${DEFAULT_AUTHOR_HANDLE}`,
     authorId: DEFAULT_AUTHOR_HANDLE,
-    thumbnailUrl: entry.thumbnail_url ?? undefined,
+    thumbnailUrl: proxyTikTokThumbnail(entry.thumbnail_url),
     permalink,
     mediaUrl: mediaUrl ?? permalink,
   } satisfies VideoItem;
