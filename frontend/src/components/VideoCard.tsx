@@ -30,15 +30,24 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
 
       <div className="absolute inset-0 z-0">
         {thumbnailUrl ? (
-          <Image
-            alt={altText}
-            className="size-full object-cover object-center"
-            priority={index < 12}
-            sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 18vw, (min-width: 768px) 28vw, 42vw"
-            src={thumbnailUrl}
-            fill
-            unoptimized={isTikTok}
-          />
+          isTikTok ? (
+            <img
+              alt={altText}
+              className="size-full object-cover object-center"
+              loading={index < 12 ? "eager" : "lazy"}
+              referrerPolicy="no-referrer"
+              src={thumbnailUrl}
+            />
+          ) : (
+            <Image
+              alt={altText}
+              className="size-full object-cover object-center"
+              priority={index < 12}
+              sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 18vw, (min-width: 768px) 28vw, 42vw"
+              src={thumbnailUrl}
+              fill
+            />
+          )
         ) : (
           <div aria-hidden="true" className="size-full bg-neutral-900" />
         )}
