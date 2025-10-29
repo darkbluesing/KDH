@@ -12,6 +12,20 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
   const { title, source, viewCount, channelName, thumbnailUrl } = video;
   const altText = `${title} 썸네일`;
   const isTikTok = source === "tiktok";
+  const resolvedThumbnailUrl = (() => {
+    if (!thumbnailUrl) {
+      return undefined;
+    }
+    if (!isTikTok) {
+      return thumbnailUrl;
+    }
+    try {
+      return `/api/tiktok-thumbnail?src=${encodeURIComponent(thumbnailUrl)}`;
+    } catch (error) {
+      console.warn("VideoCard: failed to encode TikTok thumbnail", { thumbnailUrl, error });
+      return thumbnailUrl;
+    }
+  })();
 
   return (
     <article
@@ -29,14 +43,13 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
       />
 
       <div className="absolute inset-0 z-0">
-        {thumbnailUrl ? (
+        {resolvedThumbnailUrl ? (
           isTikTok ? (
             <img
               alt={altText}
               className="size-full object-cover object-center"
               loading={index < 12 ? "eager" : "lazy"}
-              referrerPolicy="no-referrer"
-              src={thumbnailUrl}
+              src={resolvedThumbnailUrl}
             />
           ) : (
             <Image
@@ -44,7 +57,7 @@ export function VideoCard({ index, onSelect, video }: VideoCardProps) {
               className="size-full object-cover object-center"
               priority={index < 12}
               sizes="(min-width: 1536px) 12vw, (min-width: 1280px) 16vw, (min-width: 1024px) 18vw, (min-width: 768px) 28vw, 42vw"
-              src={thumbnailUrl}
+              src={resolvedThumbnailUrl}
               fill
             />
           )
