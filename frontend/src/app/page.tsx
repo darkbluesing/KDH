@@ -123,6 +123,11 @@ export default function Home() {
   const [inlineBannerAd, setInlineBannerAd] = useState<AdItem | null>(() => fallbackInlineBanner);
 
   const isMountedRef = useRef(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const loadVideos = useCallback(async (forceRefresh = false) => {
     setIsVideosLoading(true);
@@ -407,28 +412,36 @@ export default function Home() {
                   <p className="text-sm text-kdh-metallic-silver/70">YouTube 최신 영상을 불러오는 중입니다...</p>
                 ) : null}
 
-                <VideoGrid
-                  activeFilter={activeFilter}
-                  inlineAd={inlineBannerAd}
-                  filterTabs={FILTER_TABS}
-                  onFilterChange={setActiveFilter}
-                  onSelect={handleVideoSelect}
-                  sectionId="grid"
-                  videos={displayedVideos}
-                />
+                {isMounted ? (
+                  <>
+                    <VideoGrid
+                      activeFilter={activeFilter}
+                      inlineAd={inlineBannerAd}
+                      filterTabs={FILTER_TABS}
+                      onFilterChange={setActiveFilter}
+                      onSelect={handleVideoSelect}
+                      sectionId="grid"
+                      videos={displayedVideos}
+                    />
 
-                {isMobile && displayLimit < filteredVideos.length ? (
-                  <div className="flex justify-center">
-                    <button
-                      className="group relative overflow-hidden rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-kdh-metallic-silver shadow-neon transition hover:border-kdh-neon-purple hover:text-white"
-                      onClick={handleLoadMore}
-                      type="button"
-                    >
-                      <span className="absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_top_right,rgba(162,89,255,0.45),transparent_55%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                      Load More
-                    </button>
+                    {isMobile && displayLimit < filteredVideos.length ? (
+                      <div className="flex justify-center">
+                        <button
+                          className="group relative overflow-hidden rounded-full border border-kdh-electric-blue/60 bg-kdh-electric-blue/20 px-6 py-3 text-sm font-medium uppercase tracking-[0.25em] text-kdh-metallic-silver shadow-neon transition hover:border-kdh-neon-purple hover:text-white"
+                          onClick={handleLoadMore}
+                          type="button"
+                        >
+                          <span className="absolute inset-0 -z-[1] bg-[radial-gradient(circle_at_top_right,rgba(162,89,255,0.45),transparent_55%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                          Load More
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <div className="flex h-64 w-full items-center justify-center">
+                    <p className="text-sm text-kdh-metallic-silver/70">Loading Demon Hunters shorts...</p>
                   </div>
-                ) : null}
+                )}
               </section>
 
               <SideBanner position="right" />
