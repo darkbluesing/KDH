@@ -3,6 +3,7 @@ process.env.NEXT_DISABLE_FONT_DOWNLOADS = process.env.NEXT_DISABLE_FONT_DOWNLOAD
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
