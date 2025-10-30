@@ -43,7 +43,7 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
     if (!payload || payload.source !== "tiktok" || !payload.id) {
       return null;
     }
-    const params = new URLSearchParams({ lang: "en", autoplay: "1" });
+    const params = new URLSearchParams({ lang: "en", autoplay: "1", muted: "1" });
     return `https://www.tiktok.com/embed/${payload.id}?${params.toString()}`;
   }, [payload]);
 
@@ -96,28 +96,19 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
     if (payload?.source === "tiktok" && payload.mediaUrl && tiktokVideoRef.current) {
       const videoElement = tiktokVideoRef.current;
       videoElement.currentTime = 0;
+      videoElement.muted = true; // Mute by default to allow autoplay
+
       const playPromise = videoElement.play();
       if (playPromise) {
-        playPromise.catch(() => {
-          videoElement.muted = false;
+        playPromise.catch((error) => {
+          console.error("Video autoplay failed, browser might have strict policies:", error);
+          // Don't unmute on failure. Let the user control it.
         });
       }
     }
   }, [isOpen, payload]);
 
-  useEffect(() => {
-    if (isOpen && isMobile) {
-      if (payload?.source === 'tiktok' && tiktokEmbedSrc && iframeRef.current) {
-        iframeRef.current.requestFullscreen().catch(err => {
-          console.error("Error attempting to enable fullscreen for iframe:", err);
-        });
-      } else if (payload?.source === 'tiktok' && payload.mediaUrl && tiktokVideoRef.current) {
-        tiktokVideoRef.current.requestFullscreen().catch(err => {
-          console.error("Error attempting to enable fullscreen for video:", err);
-        });
-      }
-    }
-  }, [isOpen, isMobile, payload, tiktokEmbedSrc]);
+
 
   if (!payload) {
     return null;
@@ -174,7 +165,7 @@ export function VideoModal({ isOpen, payload, onClose }: VideoModalProps) {
                     className="h-full w-full object-cover"
                     controls
                     key={payload.id}
-                    playsInline={!isMobile}
+                    playsInline
                     preload="auto"
                     ref={tiktokVideoRef}
                     src={payload.mediaUrl}
