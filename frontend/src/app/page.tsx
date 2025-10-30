@@ -338,7 +338,7 @@ export default function Home() {
                 <div className="relative mx-auto max-w-7xl overflow-visible">
                   <Image
                     alt="K-POP Demon Hunters Logo"
-                    className="h-auto w-full origin-top scale-110 sm:scale-[1.2] lg:scale-[1.3]"
+                    className="h-auto w-full"
                     height={200}
                     src="/main_logo.png"
                     width={600}
