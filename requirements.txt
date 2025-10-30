@@ -3,3 +3,4 @@ TikTokApi>=5.0
 google-api-python-client
 Flask-Cors
 requests>=2.31
+redis>=4.0

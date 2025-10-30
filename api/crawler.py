@@ -57,9 +57,24 @@ class CrawlerResult:
     next_cursor: Optional[int] = None
 
 
+import redis
+
+
 _CACHE: dict[str, dict[str, object]] = {}
 CACHE_TTL = int(os.getenv("TIKTOK_CACHE_TTL", "1800"))  # seconds
 DEFAULT_KEYWORD = os.getenv("TIKTOK_KEYWORD", "KPOP DEMON HUNTERS").split(',')
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = int(os.getenv("REDIS_PORT", "6379"))
+REDIS_DB = int(os.getenv("REDIS_DB", "0"))
+
+try:
+    redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+    redis_client.ping()
+    logger.info("Successfully connected to Redis at %s:%d", REDIS_HOST, REDIS_PORT)
+except redis.exceptions.ConnectionError as e:
+    logger.error("Could not connect to Redis at %s:%d. Caching will be disabled. Error: %s", REDIS_HOST, REDIS_PORT, e)
+    redis_client = None
 
 
 def _normalise_keywords(keywords: Optional[List[str]]) -> List[str]:
@@ -239,23 +254,37 @@ def get_tiktok_videos(
         raise ValueError("Keywords list must not be empty")
 
     # Cache key will now be based on sorted keywords and cursor
-    normalized_key = "_".join(sorted([k.lower() for k in keywords])) + (f"_cursor_{cursor}" if cursor is not None else "")
-    cached_entry = _CACHE.get(normalized_key)
-    now = time.time()
+    normalized_key = "tiktok:" + "_".join(sorted([k.lower() for k in keywords])) + (f"_cursor_{cursor}" if cursor is not None else "")
+    
+    if not force_refresh and redis_client:
+        try:
+            cached_data = redis_client.get(normalized_key)
+            if cached_data:
+                logger.info("Serving TikTok results for '%s' from Redis cache", ", ".join(keywords))
+                cached_entry = json.loads(cached_data)
+                videos = [TikTokVideo(**v) for v in cached_entry["videos"]]
+                return CrawlerResult(videos=videos, from_cache=True, next_cursor=cached_entry.get("next_cursor"))
+        except redis.exceptions.RedisError as e:
+            logger.error("Redis GET operation failed: %s", e)
+        except json.JSONDecodeError as e:
+            logger.error("Failed to decode JSON from Redis cache: %s", e)
 
-    if not force_refresh and cached_entry and now - cached_entry["timestamp"] < CACHE_TTL:
-        logger.info("Serving TikTok results for '%s' from cache", ", ".join(keywords))
-        return CrawlerResult(videos=cached_entry["videos"], from_cache=True, next_cursor=cached_entry["next_cursor"])
 
     logger.info("Bypassing cache for TikTok results for '%s'", ", ".join(keywords))
     try:
         videos, next_cursor = _run_async(keywords, num_videos, initial_cursor=cursor)
         if videos:
-            _CACHE[normalized_key] = {
-                "videos": videos,
-                "timestamp": now,
-                "next_cursor": next_cursor,
-            }
+            if redis_client:
+                try:
+                    videos_as_dicts = [asdict(v) for v in videos]
+                    cache_payload = {
+                        "videos": videos_as_dicts,
+                        "next_cursor": next_cursor,
+                    }
+                    redis_client.set(normalized_key, json.dumps(cache_payload), ex=CACHE_TTL)
+                except redis.exceptions.RedisError as e:
+                    logger.error("Redis SET operation failed: %s", e)
+
             return CrawlerResult(videos=videos, from_cache=False, next_cursor=next_cursor)
 
         error_message = f"no video results for keywords: {', '.join(keywords)}"

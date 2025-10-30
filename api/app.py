@@ -2,119 +2,25 @@
 from __future__ import annotations
 
 import os
-import sys
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from typing import List, Optional
 
-import re
-from urllib.parse import urlparse
-
-import requests
-from flask import Flask, Response, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request
 from flask_cors import CORS
 
 from crawler import DEFAULT_KEYWORD, CrawlerResult, get_tiktok_videos
 
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-
 app = Flask(__name__)
 CORS(app)
-
-_ALLOWED_TIKTOK_HOSTS = re.compile(r"^(?:[a-z0-9-]+\.)*(?:tiktokcdn\.com|tiktokcdn-us\.com|tiktokcdn-eu\.com)$", re.IGNORECASE)
-
-
-def _validate_tiktok_thumbnail(src: Optional[str]) -> Optional[str]:
-    if not src:
-        return None
-    try:
-        parsed = urlparse(src)
-    except ValueError:
-        return None
-    if parsed.scheme != "https":
-        return None
-    if not _ALLOWED_TIKTOK_HOSTS.match(parsed.hostname or ""):
-        return None
-    return parsed.geturl()
-
-@dataclass(slots=True)
-class YouTubeVideo:
-    """Minimal metadata required to render a a YouTube video embed."""
-
-    video_id: str
-    video_url: str
-    author_id: str
-    thumbnail_url: Optional[str] = None
-    title: Optional[str] = None
-    channel_name: Optional[str] = None
-
-def get_youtube_videos(query: str, limit: int = 100) -> list[YouTubeVideo]:
-    api_key = os.getenv("YOUTUBE_API_KEY")
-    if not api_key:
-        print("YOUTUBE_API_KEY environment variable not set.", file=sys.stderr)
-        return []
-
-    youtube = build("youtube", "v3", developerKey=api_key)
-    videos: list[YouTubeVideo] = []
-
-    try:
-        search_response = youtube.search().list(
-            q=query,
-            type="video",
-            part="id,snippet",
-            maxResults=limit,
-            videoEmbeddable="true",
-        ).execute()
-
-        for search_result in search_response.get("items", []):
-            video_id = search_result["id"]["videoId"]
-            title = search_result["snippet"]["title"]
-            channel_name = search_result["snippet"]["channelTitle"]
-            thumbnail_url = search_result["snippet"]["thumbnails"]["high"]["url"]
-            
-            videos.append(
-                YouTubeVideo(
-                    video_id=video_id,
-                    video_url=f"https://www.youtube.com/watch?v={video_id}",
-                    author_id=search_result["snippet"]["channelId"],
-                    thumbnail_url=thumbnail_url,
-                    title=title,
-                    channel_name=channel_name,
-                )
-            )
-    except HttpError as e:
-        print(f"An HTTP error {e.resp.status} occurred:\n{e.content}", file=sys.stderr)
-    except Exception as e:
-        print(f"An error occurred: {e}", file=sys.stderr)
-
-    return videos
-
-
 
 def _serialize_videos(result: CrawlerResult) -> list[dict[str, object]]:
     videos = []
     for video in result.videos:
-    video_dict = asdict(video)
-    # The frontend expects a `mediaUrl` field for direct video playback.
-    video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
-    video_dict["authorId"] = video.author_id
-
-    permalink = video.video_url or video_dict.get("video_url") or video_dict.get("permalink")
-    proxied_thumbnail = None
-    if permalink:
-        try:
-            proxied_thumbnail = f"/proxy/tiktok-thumbnail?permalink={requests.utils.requote_uri(permalink)}"
-        except Exception:  # noqa: BLE001
-            proxied_thumbnail = None
-
-    if not proxied_thumbnail:
-        validated_thumbnail = _validate_tiktok_thumbnail(video.thumbnail_url)
-        if validated_thumbnail:
-            proxied_thumbnail = f"/proxy/tiktok-thumbnail?src={requests.utils.requote_uri(validated_thumbnail)}"
-
-    if proxied_thumbnail:
-        video_dict["thumbnail_url"] = proxied_thumbnail
-    videos.append(video_dict)
+        video_dict = asdict(video)
+        # The frontend expects a `mediaUrl` field for direct video playback.
+        video_dict["mediaUrl"] = video_dict.get("play_url") or video_dict.get("download_url")
+        video_dict["authorId"] = video.author_id
+        videos.append(video_dict)
     return videos
 
 
@@ -169,113 +75,8 @@ def api_videos():
     })
 
 
-@app.route("/api/youtube/videos")
-def api_youtube_videos():
-    query = _resolve_keyword(request.args.get("q"))
-    limit = int(request.args.get("limit", 100)) # Default limit to 100
-
-    youtube_videos = get_youtube_videos(query, limit=limit)
-
-    # Convert YouTubeVideo objects to a format compatible with frontend's VideoItem
-    # Assuming VideoItem expects 'source', 'id', 'title', 'thumbnailUrl', 'permalink', 'channelName'
-    serialized_videos = []
-    for video in youtube_videos:
-        serialized_videos.append({
-            "id": video.video_id,
-            "title": video.title,
-            "source": "youtube",
-            "channelName": video.channel_name,
-            "thumbnailUrl": video.thumbnail_url,
-            "permalink": video.video_url,
-            "mediaUrl": video.video_url, # For YouTube, mediaUrl can be the video_url
-        })
-
-    payload = {
-        "keyword": query,
-        "total": len(serialized_videos),
-        "videos": serialized_videos,
-    }
-    return jsonify(payload), 200
-
-
-def _normalise_permalink(raw: Optional[str]) -> Optional[str]:
-    if not raw:
-        return None
-    try:
-        parsed = urlparse(raw)
-    except ValueError:
-        return None
-    if parsed.scheme != "https":
-        return None
-    if parsed.hostname not in {"www.tiktok.com", "tiktok.com"}:
-        return None
-    if "/video/" not in parsed.path:
-        return None
-    return parsed.geturl()
-
-
-def _fetch_oembed_thumbnail(permalink: str) -> Optional[str]:
-    try:
-        response = requests.get(
-            "https://www.tiktok.com/oembed",
-            params={"url": permalink},
-            headers={"User-Agent": "Mozilla/5.0"},
-            timeout=10,
-        )
-        if response.ok:
-            data = response.json()
-            thumbnail = data.get("thumbnail_url")
-            return thumbnail if _validate_tiktok_thumbnail(thumbnail) else None
-        app.logger.info(
-            "TikTok oEmbed request failed",
-            extra={"permalink": permalink, "status_code": response.status_code},
-        )
-    except requests.RequestException as exc:  # noqa: BLE001
-        app.logger.warning(
-            "Error calling TikTok oEmbed",
-            extra={"permalink": permalink, "error": str(exc)},
-        )
-    return None
-
-
-@app.route("/proxy/tiktok-thumbnail")
-def proxy_tiktok_thumbnail():
-    permalink = _normalise_permalink(request.args.get("permalink"))
-    source = _validate_tiktok_thumbnail(request.args.get("src"))
-
-    if not source and permalink:
-        source = _fetch_oembed_thumbnail(permalink)
-
-    if not source:
-        return jsonify({"error": "Invalid TikTok thumbnail URL"}), 400
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
-        "Referer": "https://www.tiktok.com/",
-    }
-
-    try:
-        upstream = requests.get(source, headers=headers, timeout=10)
-    except requests.RequestException as exc:  # noqa: BLE001
-        app.logger.warning("Failed to fetch TikTok thumbnail", extra={"src": source, "error": str(exc)})
-        return jsonify({"error": "Unable to reach TikTok CDN"}), 502
-
-    if not upstream.ok:
-        app.logger.info(
-            "TikTok CDN rejected thumbnail request",
-            extra={"src": source, "status_code": upstream.status_code},
-        )
-        return jsonify({"error": "TikTok CDN rejected request"}), upstream.status_code
-
-    response = Response(upstream.content, status=200)
-    response.headers["Content-Type"] = upstream.headers.get("Content-Type", "image/jpeg")
-    response.headers["Cache-Control"] = "public, max-age=86400"
-    if upstream.headers.get("ETag"):
-        response.headers["ETag"] = upstream.headers["ETag"]
-    return response
-
-
 if __name__ == "__main__":
     debug_mode = os.getenv("FLASK_DEBUG", "1") == "1"
     port = int(os.getenv("PORT", "5001"))
     app.run(host="0.0.0.0", port=port, debug=debug_mode)
+
