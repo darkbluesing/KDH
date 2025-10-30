@@ -336,13 +336,12 @@ export default function Home() {
             <section className="flex flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-12">
               <div className="max-w-2xl space-y-6">
                 <div className="relative mx-auto max-w-7xl overflow-visible">
-                  <Image
+                  <img
                     alt="K-POP Demon Hunters Logo"
                     className="h-auto w-full"
-                    height={200}
                     src="/main_logo.webp"
                     width={600}
-                    priority
+                    height={200}
                   />
                 </div>
                 <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
