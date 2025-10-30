@@ -332,16 +332,17 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 mx-auto min-h-screen w-full max-w-none px-[10px] pb-20 pt-1 sm:pt-2">
-          <main className="mx-auto flex w-full max-w-[1380px] flex-col gap-10 rounded-[32px] bg-black/10 px-[10px] pb-6 pt-2 sm:pt-3 lg:-mt-10 xl:-mt-16 backdrop-blur-sm">
+          <main className="mx-auto flex w-full max-w-[1380px] flex-col gap-10 rounded-[32px] bg-black/10 px-[10px] pb-6 pt-2 sm:pt-3 backdrop-blur-sm">
             <section className="flex flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-start lg:gap-12">
               <div className="max-w-2xl space-y-6">
                 <div className="relative mx-auto max-w-7xl overflow-visible">
-                  <img
+                  <Image
                     alt="K-POP Demon Hunters Logo"
                     className="h-auto w-full"
+                    height={200}
                     src="/main_logo.webp"
                     width={600}
-                    height={200}
+                    priority
                   />
                 </div>
                 <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl">
@@ -362,7 +363,7 @@ export default function Home() {
                   </button>
                 </div>
               </div>
-              <div className="flex flex-col gap-6 lg:mt-[120px] xl:mt-[140px]">
+              <div className="flex flex-col gap-6">
                 <div className="rounded-[28px] border border-white/10 bg-gradient-to-br from-kdh-deep-black/80 via-kdh-charcoal/60 to-black/60 p-0.5 shadow-[0_25px_60px_rgba(20,0,40,0.45)]">
                   <div className="rounded-[24px] border border-white/5 bg-black/40 p-2 sm:p-3">
                     <div className="aspect-video w-full overflow-hidden rounded-2xl border border-white/5">

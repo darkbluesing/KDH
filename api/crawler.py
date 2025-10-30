@@ -169,9 +169,7 @@ async def _fetch_tiktok_videos_async(keywords: List[str], num_videos: int, *, in
     last_cursor: Optional[int] = initial_cursor
 
     async with TikTokApi() as api:
-        logger.info("Attempting to create TikTokApi sessions...")
         await api.create_sessions(num_sessions=1, sleep_after=3)
-        logger.info("TikTokApi sessions created.")
 
         for keyword in keywords:
             cursor = initial_cursor if initial_cursor is not None else 0
@@ -182,7 +180,6 @@ async def _fetch_tiktok_videos_async(keywords: List[str], num_videos: int, *, in
                 try:
                     response = await api.make_request(url=SEARCH_URL, params=params)
                     logger.debug("TikTok API raw response for keyword '%s': %s", keyword, response)
-                    logger.info("TikTok API response received for keyword '%s', page %d", keyword, page + 1)
                 except Exception as exc:  # noqa: BLE001
                     logger.error("Request to TikTok search failed for keyword '%s': %s", keyword, exc)
                     return [], None # Return empty list and None cursor on error
@@ -193,16 +190,12 @@ async def _fetch_tiktok_videos_async(keywords: List[str], num_videos: int, *, in
 
                 data_block = response.get("data") or []
                 logger.debug("TikTok API data_block for keyword '%s': %s", keyword, data_block)
-                if not data_block:
-                    logger.info("No data block in TikTok API response for keyword '%s', page %d", keyword, page + 1)
-
                 new_videos_from_batch = []
                 for video in _extract_videos(data_block):
                     if video.video_id in seen_ids:
                         continue
                     seen_ids.add(video.video_id)
                     new_videos_from_batch.append(video)
-                    logger.debug("Extracted video: id=%s, thumb=%s, url=%s", video.video_id, video.thumbnail_url, video.video_url)
 
                 all_videos.extend(new_videos_from_batch)
 
