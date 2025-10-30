@@ -338,7 +338,7 @@ export default function Home() {
                 <div className="relative mx-auto max-w-7xl overflow-visible">
                   <Image
                     alt="K-POP Demon Hunters Logo"
-                    className="h-auto w-full origin-top -translate-y-2 scale-110 sm:-translate-y-3 sm:scale-[1.2] lg:-translate-y-4 lg:scale-[1.3]"
+                    className="h-auto w-full origin-top scale-110 sm:scale-[1.2] lg:scale-[1.3]"
                     height={200}
                     src="/main_logo.png"
                     width={600}
@@ -385,19 +385,19 @@ export default function Home() {
                   <div className="space-y-3 leading-relaxed">
                     <div className="flex items-start gap-3">
                       <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-neon-purple/70 shadow-[0_0_16px_rgba(162,89,255,0.65)]" />
-                      <p className="text-sm font-medium text-white whitespace-nowrap">First Netflix film with 300 million+ views, all-time No.1.</p>
+                      <p className="text-sm font-medium text-white">First Netflix film with 300 million+ views, all-time No.1.</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-electric-blue/60 shadow-[0_0_12px_rgba(69,137,255,0.6)]" />
-                      <p className="text-sm font-medium text-white whitespace-nowrap">Eight OST tracks on Billboard Hot 100, &#39;Golden&#39; No.1 for five weeks.</p>
+                      <p className="text-sm font-medium text-white">Eight OST tracks on Billboard Hot 100, &#39;Golden&#39; No.1 for five weeks.</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-metallic-silver/70 shadow-[0_0_12px_rgba(196,203,223,0.45)]" />
-                      <p className="text-sm font-medium text-white whitespace-nowrap">Simultaneous No.1 on Billboard 200, Hot 100, and Global 200 charts.</p>
+                      <p className="text-sm font-medium text-white">Simultaneous No.1 on Billboard 200, Hot 100, and Global 200 charts.</p>
                     </div>
                     <div className="flex items-start gap-3">
                       <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 rounded-full bg-kdh-bloody-red/70 shadow-[0_0_14px_rgba(255,69,100,0.55)]" />
-                      <p className="text-sm font-medium text-white whitespace-nowrap">No.1 on Netflix Global Top 10 Movies list.</p>
+                      <p className="text-sm font-medium text-white">No.1 on Netflix Global Top 10 Movies list.</p>
                     </div>
                   </div>
                 </dl>
