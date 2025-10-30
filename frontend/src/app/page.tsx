@@ -340,7 +340,7 @@ export default function Home() {
                     alt="K-POP Demon Hunters Logo"
                     className="h-auto w-full"
                     height={200}
-                    src="/main_logo.png"
+                    src="/main_logo.webp"
                     width={600}
                     priority
                   />
